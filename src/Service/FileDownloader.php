@@ -17,6 +17,8 @@ class FileDownloader {
         $this->base = $bindSourceBase;
         $this->client = new Client(['base_uri' => $this->base, 'stream' => true, 'debug' => false]);
         $this->filesystem = new Filesystem();
+
+        $this->filenames = [];
     }
 
     public function download($uri): string
