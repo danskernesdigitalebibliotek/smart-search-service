@@ -19,32 +19,14 @@ class SearchFeedRepository extends ServiceEntityRepository
         parent::__construct($registry, SearchFeed::class);
     }
 
-    // /**
-    //  * @return SearchFeed[] Returns an array of SearchFeed objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('s.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+    /**
+     * Truncate the database table used for this entity.
+     *
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function truncateTable() {
+        $connection = $this->getEntityManager()->getConnection();
+        $sql = $connection->getDatabasePlatform()->getTruncateTableSQL(SearchFeed::class);
+        $connection->executeStatement($sql);
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?SearchFeed
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

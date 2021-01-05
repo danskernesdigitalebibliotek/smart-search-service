@@ -144,15 +144,12 @@ class ParseSearchFeedService {
     }
 
     /**
-     * Reset the database table.
+     * Reset the database table (truncate it).
      *
      * @throws \Doctrine\DBAL\Exception
      */
     public function reset() {
-        // @TODO: Move into repos class.
-        $connection = $this->em->getConnection();
-        $sql = $connection->getDatabasePlatform()->getTruncateTableSQL(SearchFeed::class);
-        $connection->executeStatement($sql);
+        $this->searchFeedRepos->truncateTable();
     }
 
     /**
