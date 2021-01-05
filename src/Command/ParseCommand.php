@@ -30,9 +30,12 @@ class ParseCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        foreach ($this->ps->parse('/app/var/search_feed_2020.csv') as $count) {
-            $output->write('.');
-        }
+//        foreach ($this->ps->parse('/app/var/search_feed_2020.csv') as $count) {
+//            $output->write('.');
+//        }
+
+        $this->ps->writeFile(100);
+
 
         return Command::SUCCESS;
     }

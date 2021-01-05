@@ -5,6 +5,9 @@ namespace App\Service;
 use GuzzleHttp\Client;
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * Class FileDownloader
+ */
 class FileDownloader {
 
     private string $base;
@@ -12,6 +15,11 @@ class FileDownloader {
     private array $filenames;
     private Filesystem $filesystem;
 
+    /**
+     * FileDownloader constructor.
+     *
+     * @param string $bindSourceBase
+     */
     public function __construct(string $bindSourceBase)
     {
         $this->base = $bindSourceBase;
@@ -21,7 +29,16 @@ class FileDownloader {
         $this->filenames = [];
     }
 
-    public function download($uri): string
+    /**
+     *
+     *
+     * @param string $uri
+     *
+     * @return string
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function download(string $uri): string
     {
         $filename = $this->filesystem->tempnam('/tmp', 'downloaded_');
 
@@ -38,7 +55,14 @@ class FileDownloader {
         return $filename;
     }
 
-    public function cleanUp($uri): bool
+    /**
+     *
+     *
+     * @param string $uri
+     *
+     * @return bool
+     */
+    public function cleanUp(string $uri): bool
     {
         try {
             $filename = $this->getFileName($uri);
@@ -50,11 +74,26 @@ class FileDownloader {
         return true;
     }
 
+    /**
+     *
+     *
+     * @param string $uri
+     * @param string $filename
+     */
     private function saveFileName(string $uri, string $filename)
     {
         $this->filenames[$uri] = $filename;
     }
 
+    /**
+     *
+     *
+     * @param string $uri
+     *
+     * @return string
+     *
+     * @throws \Exception
+     */
     private function getFileName(string $uri): string
     {
         if (array_key_exists($uri, $this->filenames)) {

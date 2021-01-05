@@ -6,6 +6,8 @@ use App\Repository\SearchFeedRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * Class SearchFeed
+ *
  * @ORM\Entity(repositoryClass=SearchFeedRepository::class)
  */
 class SearchFeed
@@ -15,32 +17,32 @@ class SearchFeed
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $year;
+    private int $year;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $week;
+    private int $week;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $search;
+    private string $search;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $longPeriod = 0;
+    private int $longPeriod = 0;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $shortPeriod = 0;
+    private int $shortPeriod = 0;
 
     public function getId(): ?int
     {

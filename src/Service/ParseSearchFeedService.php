@@ -10,7 +10,9 @@ use Box\Spout\Reader\CSV\Sheet;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Doctrine\ORM\EntityManagerInterface;
 
-
+/**
+ * Class ParseSearchFeedService
+ */
 class ParseSearchFeedService {
 
     private string $projectDir;
@@ -19,6 +21,15 @@ class ParseSearchFeedService {
     private SearchFeedRepository $searchFeedRepos;
     private EntityManagerInterface $em;
 
+    /**
+     * ParseSearchFeedService constructor.
+     *
+     * @param string $bindSourceSearchFeed
+     * @param string $bindProjectDir
+     * @param EntityManagerInterface $entityManager
+     * @param SearchFeedRepository $searchFeedRepository
+     * @param FileDownloader $fileDownloader
+     */
     public function __construct(string $bindSourceSearchFeed, string $bindProjectDir, EntityManagerInterface $entityManager, SearchFeedRepository $searchFeedRepository, FileDownloader $fileDownloader)
     {
         $this->source = $bindSourceSearchFeed;
@@ -28,7 +39,22 @@ class ParseSearchFeedService {
         $this->fileDownloader = $fileDownloader;
     }
 
-    public function parse(string $filename = '') {
+    /**
+     * Parse CSV file with search query information.
+     *
+     * Note the function yield for every 1000 rows parsed to provide feedback on the parsing process.
+     *
+     * @param string $filename
+     *   If provided the file will be used as input else file will be downloaded.
+     *
+     * @return \Generator
+     *   Yield for every 1000 rows.
+     *
+     * @throws \Box\Spout\Common\Exception\IOException
+     * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
+     */
+    public function parse(string $filename = ''): \Generator
+    {
         if ($filename === '') {
             $filename = $this->fileDownloader->download($this->source);
         }
@@ -42,36 +68,38 @@ class ParseSearchFeedService {
         foreach ($reader->getSheetIterator() as $sheet) {
             /* @var Row $row */
             foreach ($sheet->getRowIterator() as $row) {
-                $search_year = (int) $row->getCellAtIndex(0)->getValue();
-                $search_week = (int) $row->getCellAtIndex(1)->getValue();
+                $searchYear = (int) $row->getCellAtIndex(0)->getValue();
+                $searchWeek = (int) $row->getCellAtIndex(1)->getValue();
 
-                // Debug code.
                 $rowsCount++;
+
+                // Debug code (yield progress).
                 if ($rowsCount % 1000 == 0) yield $rowsCount;
 
-                if ($this->isFromPeriod($search_year, $search_week)) {
-                    $search_key = $row->getCellAtIndex(2)->getValue();
+                if ($this->isFromPeriod($searchYear, $searchWeek)) {
+                    $searchKey = $row->getCellAtIndex(2)->getValue();
                     $search_count = (int) $row->getCellAtIndex(3)->getValue();
 
-                    // We exclude complex search strings. These are most often made by
-                    // professionals and don't need to be addresses by the module.
-                    if (!(strpos($search_key, '=') !== false || strpos($search_key, '(') !== false)) {
-                        $entity = $this->searchFeedRepos->findOneBy(['search' => $search_key]);
+                    // We exclude complex search strings.
+                    if ($this->isValid($searchKey)) {
+                        $entity = $this->searchFeedRepos->findOneBy(['search' => $searchKey]);
                         if (is_null($entity)) {
                             $entity = new SearchFeed();
-                            $entity->setYear($search_year);
-                            $entity->setWeek($search_week);
-                            $entity->setSearch($search_key);
+                            $entity->setYear($searchYear);
+                            $entity->setWeek($searchWeek);
+                            $entity->setSearch($searchKey);
                             $this->em->persist($entity);
                         }
                         $entity->incriminateLongPeriod($search_count);
 
-                        if ($this->isFromPeriod($search_year, $search_week, 4)) {
+                        if ($this->isFromPeriod($searchYear, $searchWeek, 4)) {
                             $entity->incriminateShortPeriod($search_count);
                         }
 
-                        // Make it stick.
-                        $this->em->flush();
+                        // Make it stick for every 500 rows.
+                        if (0 === $rowsCount % 500) {
+                            $this->em->flush();
+                        }
                     }
                 }
             }
@@ -79,31 +107,51 @@ class ParseSearchFeedService {
 
         $reader->close();
 
-        //$this->fileDownloader->cleanUp($this->source);
+        $this->fileDownloader->cleanUp($this->source);
     }
 
-    public function writeFile($rows = 5000, $filename = 'searchdata.csv')
+    /**
+     * Write that parsed data into CSV output file ordered by most searches.
+     *
+     * @param int $rows
+     *   Number of rows to output.
+     * @param string $filename
+     *   The filename to write to in the public folder.
+     *
+     * @throws \Box\Spout\Common\Exception\IOException
+     * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
+     */
+    public function writeFile(int $rows = 5000, string $filename = 'searchdata.csv')
     {
         $writer = WriterEntityFactory::createCSVWriter();
         $writer->openToFile($this->projectDir . '/public/' . $filename);
 
-        $query = $this->em->createQuery('SELECT s FROM SearchFeed s ORDER BY longPeriod DESC LIMIT ' . $rows);
-        $iterable = $query->iterate();
-        while (($row = $iterable->next()) !== false) {
-            $values = ['Carl', 'is', 'great!'];
+        $query = $this->em->createQueryBuilder()
+            ->select('s')
+            ->from(SearchFeed::class , 's')
+            ->orderBy('s.longPeriod', 'DESC')
+            ->setMaxResults($rows)
+            ->getQuery();
+
+        $iterable = $query->toIterable();
+        foreach ($iterable as $entity) {
+            $values = [$entity->getSearch(), $entity->getLongPeriod(), $entity->getShortPeriod()];
             $rowFromValues = WriterEntityFactory::createRowFromArray($values);
             $writer->addRow($rowFromValues);
         }
 
-        //$line = array($search_key, $data['long_period'], $data['short_period']);
-
         $writer->close();
     }
 
+    /**
+     * Reset the database table.
+     *
+     * @throws \Doctrine\DBAL\Exception
+     */
     public function reset() {
         // @TODO: Move into repos class.
         $connection = $this->em->getConnection();
-        $sql = $connection->getDatabasePlatform()->getTruncateTableSQL('SearchFeed');
+        $sql = $connection->getDatabasePlatform()->getTruncateTableSQL(SearchFeed::class);
         $connection->executeStatement($sql);
     }
 
@@ -111,27 +159,56 @@ class ParseSearchFeedService {
      * Check if smart search record is within look-back.
      *
      * @param int $year
+     *   Year number.
      * @param int $week
-     * @param int $lookback
+     *   Week number.
+     * @param int $period
+     *   Weeks from now that the year and week should be with in.
      *
      * @return bool
      */
-    public function isFromPeriod(int $year, int $week, int $lookback = 52): bool
+    private function isFromPeriod(int $year, int $week, int $period = 52): bool
     {
+        // @TODO: Change this to use timestamps.
         $date = new \DateTime();
         $nowYear = (int) $date->format("Y");
         $nowWeek = (int) $date->format("W");
-        if ($year == $nowYear && $nowWeek - $lookback <= $week) {
+        if ($year == $nowYear && $nowWeek - $period <= $week) {
             return true;
         }
-        elseif (($year == $nowYear - 1) && $nowWeek <= $lookback) {
-            if ($week >= (52 - $lookback + $nowWeek)) {
+        elseif (($year == $nowYear - 1) && $nowWeek <= $period) {
+            if ($week >= (52 - $period + $nowWeek)) {
                 return true;
             }
         }
 
         return false;
     }
-}
 
+    /**
+     * Check if this is a valid search string.
+     *
+     * Use to filter out search that are most often made by professionals and don't need to be addresses by the service.
+     * Also exclude numeric search faust/isbn searches and other strange searches.
+     *
+     * @param string $key
+     *   The search key.
+     *
+     * @return bool
+     *   The result of the validation.
+     */
+    private function isValid(string $key): bool
+    {
+        if (strpos($key, '=') !== false || strpos($key, '(') !== false || strpos($key, '*') !== false ) {
+            return false;
+        }
+
+        $val = str_replace(',', '', $key);
+        if (is_numeric($val)) {
+            return false;
+        }
+
+        return true;
+    }
+}
 
