@@ -80,6 +80,9 @@ class ParseSearchFeedService {
                     $searchKey = $row->getCellAtIndex(2)->getValue();
                     $search_count = (int) $row->getCellAtIndex(3)->getValue();
 
+                    // Trying to fix string encoding.
+                    $searchKey = mb_convert_encoding($searchKey, 'UTF-8', mb_detect_encoding($searchKey));
+
                     // We exclude complex search strings.
                     if ($this->isValid($searchKey)) {
                         $entity = $this->searchFeedRepos->findOneBy(['search' => $searchKey]);
@@ -103,10 +106,12 @@ class ParseSearchFeedService {
                     }
                 }
             }
+
+            // Make it stick.
+            $this->em->flush();
         }
 
         $reader->close();
-
         $this->fileDownloader->cleanUp($this->source);
     }
 

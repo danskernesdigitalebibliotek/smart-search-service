@@ -7,11 +7,11 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ParseCommand extends Command
+class ParseFeedCommand extends Command
 {
     private $ps;
 
-    protected static $defaultName = 'app:parse';
+    protected static $defaultName = 'app:parse:feed';
 
     public function __construct(ParseSearchFeedService $ps)
     {
