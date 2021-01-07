@@ -2,39 +2,71 @@
 
 namespace App\Command;
 
+use App\Service\FileDownloaderService;
 use App\Service\ParseSearchFeedService;
 use App\Service\ParseUserClickedService;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class ParseUserClickedCommand
+ */
 class ParseUserClickedCommand extends Command
 {
-    private $ps;
+    private string $source;
+    private FileDownloaderService $fileDownloader;
+    private ParseUserClickedService $parseUserClickedService;
 
     protected static $defaultName = 'app:parse:user';
 
-    public function __construct(ParseUserClickedService $ps)
+    /**
+     * ParseUserClickedCommand constructor.
+     *
+     * @param string $bindAutoDataSource
+     * @param FileDownloaderService $fileDownloader
+     * @param ParseUserClickedService $parseUserClickedService
+     */
+    public function __construct(string $bindAutoDataSource, FileDownloaderService $fileDownloader, ParseUserClickedService $parseUserClickedService)
     {
-        $this->ps = $ps;
+        $this->source = $bindAutoDataSource;
+        $this->fileDownloader = $fileDownloader;
+        $this->parseUserClickedService = $parseUserClickedService;
 
         parent::__construct();
     }
 
     /**
-     * Define the command.
+     * @inheritDoc
      */
     protected function configure()
     {
-        $this->setDescription('TEST TEST');
+        $this->setDescription('Parse user clicked information feed and write serialized txt file');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @inheritDoc
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        foreach ($this->ps->parse('/app/var/Smartsearch1y.csv') as $count) {
-            $output->write('.');
+        $progressBar = new ProgressBar($output);
+        $progressBar->setFormat('%memory:6s% [%bar%] %elapsed:6s% => %message%');
+        $progressBar->setMessage('Starting the download process...');
+        $progressBar->start();
+
+        $filename = $this->fileDownloader->download($this->source);
+
+        foreach ($this->parseUserClickedService->parse($filename) as $count) {
+            $progressBar->setMessage('processed: ' . $count);
+            $progressBar->advance();
         }
-        $this->ps->writeFile();
+
+        $progressBar->setMessage('Writing output file...');
+        $this->parseUserClickedService->writeFile();
+        $progressBar->finish();
+
+        $this->fileDownloader->cleanUp($this->source);
 
         return Command::SUCCESS;
     }

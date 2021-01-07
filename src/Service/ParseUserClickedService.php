@@ -14,24 +14,21 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class ParseUserClickedService
 {
-    private string $source;
     private string $projectDir;
     private EntityManagerInterface $em;
     private UserClickedFeedRepository $userClickedRepos;
-    private FileDownloader $fileDownloader;
+    private FileDownloaderService $fileDownloader;
 
     /**
      * ParseUserClickedService constructor.
      *
-     * @param string $bindAutoDataSource
      * @param string $bindProjectDir
      * @param EntityManagerInterface $entityManager
      * @param UserClickedFeedRepository $UserClickedFeedRepository
-     * @param FileDownloader $fileDownloader
+     * @param FileDownloaderService $fileDownloader
      */
-    public function __construct(string $bindAutoDataSource, string $bindProjectDir, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository, FileDownloader $fileDownloader)
+    public function __construct(string $bindProjectDir, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository, FileDownloaderService $fileDownloader)
     {
-        $this->source = $bindAutoDataSource;
         $this->projectDir = $bindProjectDir;
         $this->em = $entityManager;
         $this->userClickedRepos = $UserClickedFeedRepository;
@@ -41,24 +38,20 @@ class ParseUserClickedService
     /**
      * Parse CSV file with user clicked information.
      *
-     * Note the function yield for every 1000 rows parsed to provide feedback on the parsing process.
+     * Note the function yield for every 500 rows parsed to provide feedback on the parsing process.
      *
      * @param string $filename
      *   If provided the file will be used as input else file will be downloaded.
      *
      * @return \Generator
-     *   Yield for every 1000 rows.
+     *   Yield for every 500 rows.
      *
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function parse(string $filename = '')
+    public function parse(string $filename): \Generator
     {
-        if ($filename === '') {
-            $filename = $this->fileDownloader->download($this->source);
-        }
-
         $reader = ReaderEntityFactory::createCSVReader();
         $reader->setFieldDelimiter(';');
         $reader->open($filename);
@@ -77,8 +70,10 @@ class ParseUserClickedService
                 }
                 $page = $row->getCellAtIndex(1)->getValue();
 
-                // Debug code (yield progress).
-                if ($rowsCount % 500 == 0) yield $rowsCount;
+                // Yield progress).
+                if ($rowsCount % 500 == 0) {
+                    yield $rowsCount;
+                }
 
                 // Find the linked data-well post id (PID).
                 $pid = $this->getPidFromPage($page);
@@ -111,7 +106,6 @@ class ParseUserClickedService
         }
 
         $reader->close();
-        $this->fileDownloader->cleanUp($this->source);
     }
 
     /**

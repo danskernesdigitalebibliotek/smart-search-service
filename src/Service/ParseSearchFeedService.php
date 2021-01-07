@@ -16,23 +16,20 @@ use Doctrine\ORM\EntityManagerInterface;
 class ParseSearchFeedService {
 
     private string $projectDir;
-    private string $source;
-    private FileDownloader $fileDownloader;
+    private FileDownloaderService $fileDownloader;
     private SearchFeedRepository $searchFeedRepos;
     private EntityManagerInterface $em;
 
     /**
      * ParseSearchFeedService constructor.
      *
-     * @param string $bindSourceSearchFeed
      * @param string $bindProjectDir
      * @param EntityManagerInterface $entityManager
      * @param SearchFeedRepository $searchFeedRepository
-     * @param FileDownloader $fileDownloader
+     * @param FileDownloaderService $fileDownloader
      */
-    public function __construct(string $bindSourceSearchFeed, string $bindProjectDir, EntityManagerInterface $entityManager, SearchFeedRepository $searchFeedRepository, FileDownloader $fileDownloader)
+    public function __construct(string $bindProjectDir, EntityManagerInterface $entityManager, SearchFeedRepository $searchFeedRepository, FileDownloaderService $fileDownloader)
     {
-        $this->source = $bindSourceSearchFeed;
         $this->projectDir = $bindProjectDir;
         $this->em = $entityManager;
         $this->searchFeedRepos = $searchFeedRepository;
@@ -42,23 +39,19 @@ class ParseSearchFeedService {
     /**
      * Parse CSV file with search query information.
      *
-     * Note the function yield for every 1000 rows parsed to provide feedback on the parsing process.
+     * Note the function yield for every 500 rows parsed to provide feedback on the parsing process.
      *
      * @param string $filename
      *   If provided the file will be used as input else file will be downloaded.
      *
      * @return \Generator
-     *   Yield for every 1000 rows.
+     *   Yield for every 500 rows.
      *
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
      */
-    public function parse(string $filename = ''): \Generator
+    public function parse(string $filename): \Generator
     {
-        if ($filename === '') {
-            $filename = $this->fileDownloader->download($this->source);
-        }
-
         $reader = ReaderEntityFactory::createCSVReader();
         $reader->open($filename);
 
@@ -73,8 +66,10 @@ class ParseSearchFeedService {
 
                 $rowsCount++;
 
-                // Debug code (yield progress).
-                if ($rowsCount % 500 == 0) yield $rowsCount;
+                // Yield progress.
+                if ($rowsCount % 500 == 0) {
+                    yield $rowsCount;
+                }
 
                 if ($this->isFromPeriod($searchYear, $searchWeek)) {
                     $searchKey = $row->getCellAtIndex(2)->getValue();
@@ -113,7 +108,6 @@ class ParseSearchFeedService {
         }
 
         $reader->close();
-        $this->fileDownloader->cleanUp($this->source);
     }
 
     /**

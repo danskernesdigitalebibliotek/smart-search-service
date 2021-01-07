@@ -8,11 +8,11 @@ use Symfony\Component\Filesystem\Filesystem;
 /**
  * Class FileDownloader
  */
-class FileDownloader {
+class FileDownloaderService {
 
     private string $base;
     private Client $client;
-    private array $filenames;
+    private static array $filenames = [];
     private Filesystem $filesystem;
 
     /**
@@ -25,8 +25,6 @@ class FileDownloader {
         $this->base = $bindSourceBase;
         $this->client = new Client(['base_uri' => $this->base, 'stream' => true, 'debug' => false]);
         $this->filesystem = new Filesystem();
-
-        $this->filenames = [];
     }
 
     /**
@@ -82,7 +80,7 @@ class FileDownloader {
      */
     private function saveFileName(string $uri, string $filename)
     {
-        $this->filenames[$uri] = $filename;
+        FileDownloaderService::$filenames[$uri] = $filename;
     }
 
     /**
@@ -96,10 +94,10 @@ class FileDownloader {
      */
     private function getFileName(string $uri): string
     {
-        if (array_key_exists($uri, $this->filenames)) {
+        if (!array_key_exists($uri, FileDownloaderService::$filenames)) {
             throw new \Exception('Not found');
         }
 
-        return $this->filenames[$uri];
+        return FileDownloaderService::$filenames[$uri];
     }
 }
