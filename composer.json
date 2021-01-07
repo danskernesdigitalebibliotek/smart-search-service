@@ -52,6 +52,9 @@
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
         },
+        "docker-build": [
+            "bin/console --env=prod assets:install"
+        ],
         "post-install-cmd": [
             "@auto-scripts"
         ],
