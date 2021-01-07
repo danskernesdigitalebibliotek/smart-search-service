@@ -17,7 +17,6 @@ class ParseUserClickedService
     private string $projectDir;
     private EntityManagerInterface $em;
     private UserClickedFeedRepository $userClickedRepos;
-    private FileDownloaderService $fileDownloader;
 
     /**
      * ParseUserClickedService constructor.
@@ -25,14 +24,12 @@ class ParseUserClickedService
      * @param string $bindProjectDir
      * @param EntityManagerInterface $entityManager
      * @param UserClickedFeedRepository $UserClickedFeedRepository
-     * @param FileDownloaderService $fileDownloader
      */
-    public function __construct(string $bindProjectDir, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository, FileDownloaderService $fileDownloader)
+    public function __construct(string $bindProjectDir, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository)
     {
         $this->projectDir = $bindProjectDir;
         $this->em = $entityManager;
         $this->userClickedRepos = $UserClickedFeedRepository;
-        $this->fileDownloader = $fileDownloader;
     }
 
     /**

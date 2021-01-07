@@ -8,6 +8,7 @@ use App\Service\ParseUserClickedService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -42,7 +43,9 @@ class ParseUserClickedCommand extends Command
      */
     protected function configure()
     {
-        $this->setDescription('Parse user clicked information feed and write serialized txt file');
+        $this->setDescription('Parse user clicked information feed and write serialized txt file')
+            ->addOption('filename', NULL, InputOption::VALUE_OPTIONAL, 'If set use this file instead of downloading data.')
+            ->addOption('reset', NULL, InputOption::VALUE_NONE, 'Reset the parsed data (empty out the database)');
     }
 
     /**
@@ -52,10 +55,18 @@ class ParseUserClickedCommand extends Command
     {
         $progressBar = new ProgressBar($output);
         $progressBar->setFormat('%memory:6s% [%bar%] %elapsed:6s% => %message%');
-        $progressBar->setMessage('Starting the download process...');
+        $progressBar->setMessage('Starting the download process (might take some time)...');
         $progressBar->start();
 
-        $filename = $this->fileDownloader->download($this->source);
+        $filename = $input->getOption('filename');
+        if (is_null($filename)) {
+            $filename = $this->fileDownloader->download($this->source);
+        }
+
+        $reset = $input->getOption('reset');
+        if ($reset) {
+            $this->parseUserClickedService->reset();
+        }
 
         foreach ($this->parseUserClickedService->parse($filename) as $count) {
             $progressBar->setMessage('processed: ' . $count);

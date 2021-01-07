@@ -16,7 +16,6 @@ use Doctrine\ORM\EntityManagerInterface;
 class ParseSearchFeedService {
 
     private string $projectDir;
-    private FileDownloaderService $fileDownloader;
     private SearchFeedRepository $searchFeedRepos;
     private EntityManagerInterface $em;
 
@@ -26,14 +25,12 @@ class ParseSearchFeedService {
      * @param string $bindProjectDir
      * @param EntityManagerInterface $entityManager
      * @param SearchFeedRepository $searchFeedRepository
-     * @param FileDownloaderService $fileDownloader
      */
-    public function __construct(string $bindProjectDir, EntityManagerInterface $entityManager, SearchFeedRepository $searchFeedRepository, FileDownloaderService $fileDownloader)
+    public function __construct(string $bindProjectDir, EntityManagerInterface $entityManager, SearchFeedRepository $searchFeedRepository)
     {
         $this->projectDir = $bindProjectDir;
         $this->em = $entityManager;
         $this->searchFeedRepos = $searchFeedRepository;
-        $this->fileDownloader = $fileDownloader;
     }
 
     /**
