@@ -74,7 +74,7 @@ class ParseSearchFeedService {
                 $rowsCount++;
 
                 // Debug code (yield progress).
-                if ($rowsCount % 1000 == 0) yield $rowsCount;
+                if ($rowsCount % 500 == 0) yield $rowsCount;
 
                 if ($this->isFromPeriod($searchYear, $searchWeek)) {
                     $searchKey = $row->getCellAtIndex(2)->getValue();
@@ -102,6 +102,7 @@ class ParseSearchFeedService {
                         // Make it stick for every 500 rows.
                         if (0 === $rowsCount % 500) {
                             $this->em->flush();
+                            $this->em->clear();
                         }
                     }
                 }

@@ -78,7 +78,7 @@ class ParseUserClickedService
                 $page = $row->getCellAtIndex(1)->getValue();
 
                 // Debug code (yield progress).
-                if ($rowsCount % 1000 == 0) yield $rowsCount;
+                if ($rowsCount % 500 == 0) yield $rowsCount;
 
                 // Find the linked data-well post id (PID).
                 $pid = $this->getPidFromPage($page);
@@ -101,6 +101,7 @@ class ParseUserClickedService
                     // Make it stick for every 500 rows.
                     if (0 === $rowsCount % 500) {
                         $this->em->flush();
+                        $this->em->clear();
                     }
                 }
             }

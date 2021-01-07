@@ -31,12 +31,10 @@ class ParseUserClickedCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-//        foreach ($this->ps->parse('/app/var/Smartsearch1y.csv') as $count) {
-//            $output->write('.');
-//        }
-
+        foreach ($this->ps->parse('/app/var/Smartsearch1y.csv') as $count) {
+            $output->write('.');
+        }
         $this->ps->writeFile();
-
 
         return Command::SUCCESS;
     }
