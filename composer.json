@@ -25,7 +25,9 @@
     "require-dev": {
         "escapestudios/symfony2-coding-standard": "^3.11",
         "friendsofphp/php-cs-fixer": "^2.17",
-        "symfony/maker-bundle": "^1.26"
+        "psalm/plugin-symfony": "^2.1",
+        "symfony/maker-bundle": "^1.26",
+        "vimeo/psalm": "^4.3"
     },
     "config": {
         "optimize-autoloader": true,
@@ -86,8 +88,8 @@
             "@apply-coding-standards/php-cs-fixer",
             "@apply-coding-standards/phpcs"
         ],
-        "phan": [
-            "./vendor/bin/phan --allow-polyfill-parser"
+        "psalm": [
+            "./vendor/bin/psalm --show-info=true"
         ],
         "actions/phpcs": [
             "phpcs --standard=phpcs.xml.dist --report=checkstyle"

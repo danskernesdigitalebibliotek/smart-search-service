@@ -46,8 +46,14 @@ class FileDownloaderService
 
         $dest = fopen($filename, 'w');
         $source = $this->client->request('GET', $uri);
+        $input = $source->getBody()->detach();
 
-        stream_copy_to_stream($source->getBody()->detach(), $dest);
+        if (!is_null($input)) {
+            stream_copy_to_stream($input, $dest);
+        }
+        else {
+            throw new \Exception('Input stream do not exists');
+        }
 
         $source->getBody()->close();
         fclose($dest);
@@ -86,7 +92,7 @@ class FileDownloaderService
      * @param string $filename
      *   The temporary file
      */
-    private function saveFileName(string $uri, string $filename)
+    private function saveFileName(string $uri, string $filename): void
     {
         FileDownloaderService::$filenames[$uri] = $filename;
     }

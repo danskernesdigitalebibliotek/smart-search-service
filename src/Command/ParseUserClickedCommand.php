@@ -40,7 +40,7 @@ class ParseUserClickedCommand extends Command
     /**
      * {@inheritDoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setDescription('Parse user clicked information feed and write serialized txt file')
             ->addOption('filename', null, InputOption::VALUE_OPTIONAL, 'If set use this file instead of downloading data.')

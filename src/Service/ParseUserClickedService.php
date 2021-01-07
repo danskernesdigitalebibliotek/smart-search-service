@@ -114,7 +114,7 @@ class ParseUserClickedService
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    public function writeFile(string $filename = 'autodata.txt')
+    public function writeFile(string $filename = 'autodata.txt'): void
     {
         // This is done with raw SQL statements as the query build will not accept the sub-query.
         $subQuery = '(SELECT pid, search, sum(clicks) AS clicks FROM user_clicked_feed u GROUP BY search, pid)';
@@ -146,7 +146,7 @@ class ParseUserClickedService
      *
      * @throws \Doctrine\DBAL\Exception
      */
-    public function reset()
+    public function reset(): void
     {
         $this->userClickedRepos->truncateTable();
     }

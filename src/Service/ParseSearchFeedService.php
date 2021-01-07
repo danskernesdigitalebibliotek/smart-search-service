@@ -118,7 +118,7 @@ class ParseSearchFeedService
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
      */
-    public function writeFile(int $rows = 5000, string $filename = 'searchdata.csv')
+    public function writeFile(int $rows = 5000, string $filename = 'searchdata.csv'): void
     {
         $writer = WriterEntityFactory::createCSVWriter();
         $writer->openToFile($this->projectDir.'/public/'.$filename);
@@ -145,7 +145,7 @@ class ParseSearchFeedService
      *
      * @throws \Doctrine\DBAL\Exception
      */
-    public function reset()
+    public function reset(): void
     {
         $this->searchFeedRepos->truncateTable();
     }
