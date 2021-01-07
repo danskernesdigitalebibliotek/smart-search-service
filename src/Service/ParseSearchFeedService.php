@@ -11,10 +11,10 @@ use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Class ParseSearchFeedService
+ * Class ParseSearchFeedService.
  */
-class ParseSearchFeedService {
-
+class ParseSearchFeedService
+{
     private string $projectDir;
     private SearchFeedRepository $searchFeedRepos;
     private EntityManagerInterface $em;
@@ -39,10 +39,10 @@ class ParseSearchFeedService {
      * Note the function yield for every 500 rows parsed to provide feedback on the parsing process.
      *
      * @param string $filename
-     *   If provided the file will be used as input else file will be downloaded.
+     *   If provided the file will be used as input else file will be downloaded
      *
      * @return \Generator
-     *   Yield for every 500 rows.
+     *   Yield for every 500 rows
      *
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
@@ -61,10 +61,10 @@ class ParseSearchFeedService {
                 $searchYear = (int) $row->getCellAtIndex(0)->getValue();
                 $searchWeek = (int) $row->getCellAtIndex(1)->getValue();
 
-                $rowsCount++;
+                ++$rowsCount;
 
                 // Yield progress.
-                if ($rowsCount % 500 == 0) {
+                if (0 == $rowsCount % 500) {
                     yield $rowsCount;
                 }
 
@@ -111,9 +111,9 @@ class ParseSearchFeedService {
      * Write that parsed data into CSV output file ordered by most searches.
      *
      * @param int $rows
-     *   Number of rows to output.
+     *   Number of rows to output
      * @param string $filename
-     *   The filename to write to in the public folder.
+     *   The filename to write to in the public folder
      *
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
@@ -121,11 +121,11 @@ class ParseSearchFeedService {
     public function writeFile(int $rows = 5000, string $filename = 'searchdata.csv')
     {
         $writer = WriterEntityFactory::createCSVWriter();
-        $writer->openToFile($this->projectDir . '/public/' . $filename);
+        $writer->openToFile($this->projectDir.'/public/'.$filename);
 
         $query = $this->em->createQueryBuilder()
             ->select('s')
-            ->from(SearchFeed::class , 's')
+            ->from(SearchFeed::class, 's')
             ->orderBy('s.longPeriod', 'DESC')
             ->setMaxResults($rows)
             ->getQuery();
@@ -145,7 +145,8 @@ class ParseSearchFeedService {
      *
      * @throws \Doctrine\DBAL\Exception
      */
-    public function reset() {
+    public function reset()
+    {
         $this->searchFeedRepos->truncateTable();
     }
 
@@ -153,11 +154,11 @@ class ParseSearchFeedService {
      * Check if smart search record is within look-back.
      *
      * @param int $year
-     *   Year number.
+     *   Year number
      * @param int $week
-     *   Week number.
+     *   Week number
      * @param int $period
-     *   Weeks from now that the year and week should be with in.
+     *   Weeks from now that the year and week should be with in
      *
      * @return bool
      */
@@ -165,12 +166,11 @@ class ParseSearchFeedService {
     {
         // @TODO: Change this to use timestamps.
         $date = new \DateTime();
-        $nowYear = (int) $date->format("Y");
-        $nowWeek = (int) $date->format("W");
+        $nowYear = (int) $date->format('Y');
+        $nowWeek = (int) $date->format('W');
         if ($year == $nowYear && $nowWeek - $period <= $week) {
             return true;
-        }
-        elseif (($year == $nowYear - 1) && $nowWeek <= $period) {
+        } elseif (($year == $nowYear - 1) && $nowWeek <= $period) {
             if ($week >= (52 - $period + $nowWeek)) {
                 return true;
             }
@@ -186,14 +186,14 @@ class ParseSearchFeedService {
      * Also exclude numeric search faust/isbn searches and other strange searches.
      *
      * @param string $key
-     *   The search key.
+     *   The search key
      *
      * @return bool
-     *   The result of the validation.
+     *   The result of the validation
      */
     private function isValid(string $key): bool
     {
-        if (strpos($key, '=') !== false || strpos($key, '(') !== false || strpos($key, '*') !== false ) {
+        if (false !== strpos($key, '=') || false !== strpos($key, '(') || false !== strpos($key, '*')) {
             return false;
         }
 
@@ -205,4 +205,3 @@ class ParseSearchFeedService {
         return true;
     }
 }
-

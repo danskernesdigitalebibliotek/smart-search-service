@@ -6,10 +6,10 @@ use GuzzleHttp\Client;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * Class FileDownloader
+ * Class FileDownloader.
  */
-class FileDownloaderService {
-
+class FileDownloaderService
+{
     private string $base;
     private Client $client;
     private static array $filenames = [];
@@ -28,11 +28,15 @@ class FileDownloaderService {
     }
 
     /**
+     * Download file to temporary storage.
      *
+     * Using streams to download the file to keep memory usage as low as possible.
      *
      * @param string $uri
+     *   The URI of the file to download
      *
      * @return string
+     *   The file the data was downloaded to
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -54,11 +58,13 @@ class FileDownloaderService {
     }
 
     /**
-     *
+     * Remove the temporary file.
      *
      * @param string $uri
+     *   The URI that was used to create the temporary file
      *
      * @return bool
+     *   true if the clean up is successful else false
      */
     public function cleanUp(string $uri): bool
     {
@@ -73,10 +79,12 @@ class FileDownloaderService {
     }
 
     /**
-     *
+     * Save filename indexed by URI (book keeping helper).
      *
      * @param string $uri
+     *   The URI that was used to create the temporary file
      * @param string $filename
+     *   The temporary file
      */
     private function saveFileName(string $uri, string $filename)
     {
@@ -84,11 +92,13 @@ class FileDownloaderService {
     }
 
     /**
-     *
+     * Get filename based on uri (book keeping helper).
      *
      * @param string $uri
+     *   The URI that was used to create the temporary file
      *
      * @return string
+     *   The temporary file
      *
      * @throws \Exception
      */

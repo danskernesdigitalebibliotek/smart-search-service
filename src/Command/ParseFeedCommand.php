@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Class ParseFeedCommand
+ * Class ParseFeedCommand.
  */
 class ParseFeedCommand extends Command
 {
@@ -38,17 +38,17 @@ class ParseFeedCommand extends Command
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function configure()
     {
         $this->setDescription('Parse search feed and write CVS file')
-            ->addOption('filename', NULL, InputOption::VALUE_OPTIONAL, 'If set use this file instead of downloading data.')
-            ->addOption('reset', NULL, InputOption::VALUE_NONE, 'Reset the parsed data (empty out the database)');
+            ->addOption('filename', null, InputOption::VALUE_OPTIONAL, 'If set use this file instead of downloading data.')
+            ->addOption('reset', null, InputOption::VALUE_NONE, 'Reset the parsed data (empty out the database)');
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -68,7 +68,7 @@ class ParseFeedCommand extends Command
         }
 
         foreach ($this->parseSearchFeedService->parse($filename) as $count) {
-            $progressBar->setMessage('processed: ' . $count);
+            $progressBar->setMessage('processed: '.$count);
             $progressBar->advance();
         }
 

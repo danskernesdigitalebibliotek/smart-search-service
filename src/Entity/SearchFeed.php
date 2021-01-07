@@ -6,7 +6,7 @@ use App\Repository\SearchFeedRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Class SearchFeed
+ * Class SearchFeed.
  *
  * @ORM\Entity(repositoryClass=SearchFeedRepository::class)
  */

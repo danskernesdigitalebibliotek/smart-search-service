@@ -24,7 +24,8 @@ class SearchFeedRepository extends ServiceEntityRepository
      *
      * @throws \Doctrine\DBAL\Exception
      */
-    public function truncateTable() {
+    public function truncateTable()
+    {
         $connection = $this->getEntityManager()->getConnection();
         $sql = $connection->getDatabasePlatform()->getTruncateTableSQL(SearchFeed::class);
         $connection->executeStatement($sql);

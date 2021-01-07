@@ -24,7 +24,8 @@ class UserClickedFeedRepository extends ServiceEntityRepository
      *
      * @throws \Doctrine\DBAL\Exception
      */
-    public function truncateTable() {
+    public function truncateTable()
+    {
         $connection = $this->getEntityManager()->getConnection();
         $sql = $connection->getDatabasePlatform()->getTruncateTableSQL(UserClickedFeed::class);
         $connection->executeStatement($sql);

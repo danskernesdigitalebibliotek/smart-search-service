@@ -10,7 +10,7 @@ use Box\Spout\Reader\CSV\Sheet;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Class ParseUserClickedService
+ * Class ParseUserClickedService.
  */
 class ParseUserClickedService
 {
@@ -38,10 +38,10 @@ class ParseUserClickedService
      * Note the function yield for every 500 rows parsed to provide feedback on the parsing process.
      *
      * @param string $filename
-     *   If provided the file will be used as input else file will be downloaded.
+     *   If provided the file will be used as input else file will be downloaded
      *
      * @return \Generator
-     *   Yield for every 500 rows.
+     *   Yield for every 500 rows
      *
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
@@ -59,16 +59,16 @@ class ParseUserClickedService
         foreach ($reader->getSheetIterator() as $sheet) {
             /* @var Row $row */
             foreach ($sheet->getRowIterator() as $row) {
-                $rowsCount++;
+                ++$rowsCount;
 
                 // Skip first row which is headers.
-                if ($rowsCount === 1) {
+                if (1 === $rowsCount) {
                     continue;
                 }
                 $page = $row->getCellAtIndex(1)->getValue();
 
                 // Yield progress).
-                if ($rowsCount % 500 == 0) {
+                if (0 == $rowsCount % 500) {
                     yield $rowsCount;
                 }
 
@@ -109,7 +109,7 @@ class ParseUserClickedService
      * Write auto data with serialized object.
      *
      * @param string $filename
-     *   The file name to store the serialized data object in public folder.
+     *   The file name to store the serialized data object in public folder
      *
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
@@ -118,12 +118,12 @@ class ParseUserClickedService
     {
         // This is done with raw SQL statements as the query build will not accept the sub-query.
         $subQuery = '(SELECT pid, search, sum(clicks) AS clicks FROM user_clicked_feed u GROUP BY search, pid)';
-        $query = 'SELECT * FROM ' . $subQuery . ' WHERE clicks > 2 ORDER BY search ASC, clicks DESC';
+        $query = 'SELECT * FROM '.$subQuery.' WHERE clicks > 2 ORDER BY search ASC, clicks DESC';
         $conn = $this->em->getConnection();
         $stmt = $conn->prepare($query);
         $stmt->execute();
 
-        $iterable =  $stmt->iterateAssociative();
+        $iterable = $stmt->iterateAssociative();
         $data = [];
         foreach ($iterable as $row) {
             // As the data is ordered by click for each searches we can limit it to the 5 object pr. search as we known
@@ -138,7 +138,7 @@ class ParseUserClickedService
         }
 
         $data = serialize($data);
-        file_put_contents($this->projectDir . '/public/' . $filename, $data);
+        file_put_contents($this->projectDir.'/public/'.$filename, $data);
     }
 
     /**
@@ -146,7 +146,8 @@ class ParseUserClickedService
      *
      * @throws \Doctrine\DBAL\Exception
      */
-    public function reset() {
+    public function reset()
+    {
         $this->userClickedRepos->truncateTable();
     }
 
@@ -156,14 +157,14 @@ class ParseUserClickedService
      * Also filter out eReolen links (why, don't know).
      *
      * @param string $page
-     *   Page part of the data from the source file.
+     *   Page part of the data from the source file
      *
      * @return string
-     *   The pid if found else the empty string.
+     *   The pid if found else the empty string
      */
     private function getPidFromPage(string $page): string
     {
-        if (!(strpos($page, 'ereolen') !== false)) {
+        if (!(false !== strpos($page, 'ereolen'))) {
             preg_match("%ting\.(collection|object)\.(.+)%", $page, $matches);
             if ($matches && isset($matches[2])) {
                 return $matches[2];

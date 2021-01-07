@@ -3,7 +3,6 @@
 namespace App\Command;
 
 use App\Service\FileDownloaderService;
-use App\Service\ParseSearchFeedService;
 use App\Service\ParseUserClickedService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -12,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Class ParseUserClickedCommand
+ * Class ParseUserClickedCommand.
  */
 class ParseUserClickedCommand extends Command
 {
@@ -39,17 +38,17 @@ class ParseUserClickedCommand extends Command
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function configure()
     {
         $this->setDescription('Parse user clicked information feed and write serialized txt file')
-            ->addOption('filename', NULL, InputOption::VALUE_OPTIONAL, 'If set use this file instead of downloading data.')
-            ->addOption('reset', NULL, InputOption::VALUE_NONE, 'Reset the parsed data (empty out the database)');
+            ->addOption('filename', null, InputOption::VALUE_OPTIONAL, 'If set use this file instead of downloading data.')
+            ->addOption('reset', null, InputOption::VALUE_NONE, 'Reset the parsed data (empty out the database)');
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -69,7 +68,7 @@ class ParseUserClickedCommand extends Command
         }
 
         foreach ($this->parseUserClickedService->parse($filename) as $count) {
-            $progressBar->setMessage('processed: ' . $count);
+            $progressBar->setMessage('processed: '.$count);
             $progressBar->advance();
         }
 
