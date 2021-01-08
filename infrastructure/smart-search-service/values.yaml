@@ -28,6 +28,10 @@ app:
     start_servers: "15"
     min_spare_servers: "15"
     max_spare_servers: "30"
+  storage:
+    class: "azurefile-premium-retain"
+    size: "100Gi"
+    access: "ReadWriteMany"
 
 nginx:
   exporter:

@@ -47,35 +47,18 @@ spec:
             exec:
               command:
                 - php-fpm-healthcheck
-                - --accepted-conn=500000
+                - --accepted-conn=5000
             initialDelaySeconds: 0
             periodSeconds: 10
+          volumeMounts:
+            - mountPath: /var/www/html/public/data
+              name: smart-search-data-disk
           env:
             - name: APP_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-secret
                   key: APP_SECRET
-            - name: APP_OPENPLATFORM_ID
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-secret
-                  key: APP_OPENPLATFORM_ID
-            - name: APP_OPENPLATFORM_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-secret
-                  key: APP_OPENPLATFORM_SECRET
-            - name: APP_AMQP_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-secret
-                  key: APP_AMQP_USERNAME
-            - name: APP_AMQP_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-secret
-                  key: APP_AMQP_PASSWORD
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-configmap
@@ -129,3 +112,7 @@ spec:
             periodSeconds: 10
           ports:
             - containerPort: 9113
+      volumes:
+        - name: smart-search-data-disk
+          persistentVolumeClaim:
+            claimName: smart-search-data-disk

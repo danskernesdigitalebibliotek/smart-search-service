@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace:  {{ .Release.Namespace }}
+  name: smart-search-managed-disk
+spec:
+  accessModes:
+    - {{ .Values.app.storage.access }}
+  storageClassName: {{ .Values.app.storage.class }}
+  resources:
+    requests:
+      storage: {{ .Values.app.storage.size }}
