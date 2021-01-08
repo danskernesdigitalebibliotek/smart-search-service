@@ -51,7 +51,7 @@ spec:
             initialDelaySeconds: 0
             periodSeconds: 10
           volumeMounts:
-            - mountPath: /var/www/html/public/data
+            - mountPath: /var/www/html/{{ .Values.app.destination.directory }}
               name: smart-search-data-disk
           env:
             - name: APP_SECRET

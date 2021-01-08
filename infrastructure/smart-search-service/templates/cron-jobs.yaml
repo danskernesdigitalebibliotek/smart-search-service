@@ -1,0 +1,87 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}-feed-cronjob
+spec:
+  schedule: {{ .Values.cron.runAt | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.cron.successfulLimit }}
+  failedJobsHistoryLimit: {{ .Values.cron.failedLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        spec:
+          containers:
+            - name: cronjob
+              image: danskernesdigitalebibliotek/smart-search-service:{{ .Values.app.image.version }}
+              imagePullPolicy: {{ .Values.app.image.imagePullPolicy }}
+              args:
+                - "bin/console"
+                - "app:parse:feed"
+                - "--no-debug"
+              env:
+                - name: APP_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Release.Name }}-secret
+                      key: APP_SECRET
+              envFrom:
+                - configMapRef:
+                    name: {{ .Release.Name }}-configmap
+              volumeMounts:
+                  - mountPath: /var/www/html/{{ .Values.app.destination.directory }}
+                    name: smart-search-data-disk
+          restartPolicy: OnFailure
+          volumes:
+            - name: smart-search-data-disk
+              persistentVolumeClaim:
+                claimName: smart-search-managed-disk
+
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}-user-cronjob
+spec:
+  schedule: {{ .Values.cron.runAt | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.cron.successfulLimit }}
+  failedJobsHistoryLimit: {{ .Values.cron.failedLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        spec:
+          containers:
+            - name: cronjob
+              image: danskernesdigitalebibliotek/smart-search-service:{{ .Values.app.image.version }}
+              imagePullPolicy: {{ .Values.app.image.imagePullPolicy }}
+              args:
+                - "bin/console"
+                - "app:parse:user"
+                - "--no-debug"
+              env:
+                - name: APP_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Release.Name }}-secret
+                      key: APP_SECRET
+              envFrom:
+                - configMapRef:
+                    name: {{ .Release.Name }}-configmap
+              volumeMounts:
+                  - mountPath: /var/www/html/{{ .Values.app.destination.directory }}
+                    name: smart-search-data-disk
+          restartPolicy: OnFailure
+          volumes:
+            - name: smart-search-data-disk
+              persistentVolumeClaim:
+                claimName: smart-search-managed-disk

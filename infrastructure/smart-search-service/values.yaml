@@ -10,6 +10,11 @@ ingress:
   cert: "letsencrypt"
   path: "/api"
 
+cron:
+  runAt: "0 1 * * 6"
+  successfulLimit: 2
+  failedLimit: 1
+
 app:
   image:
     version: "latest"
