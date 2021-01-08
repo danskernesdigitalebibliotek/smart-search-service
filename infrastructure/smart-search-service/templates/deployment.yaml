@@ -32,10 +32,10 @@ spec:
           imagePullPolicy: {{ .Values.app.image.imagePullPolicy }}
           resources:
             requests:
-              memory: '32m'
+              memory: '64Mi'
               cpu: '50m'
             limits:
-              memory: '64Mi'
+              memory: '96Mi'
               cpu: '100m'
           readinessProbe:
             exec:
@@ -115,4 +115,4 @@ spec:
       volumes:
         - name: smart-search-data-disk
           persistentVolumeClaim:
-            claimName: smart-search-data-disk
+            claimName: smart-search-managed-disk

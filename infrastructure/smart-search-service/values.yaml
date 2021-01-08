@@ -18,6 +18,8 @@ app:
     base: "http://www.kpiindex.com/"
     feed: "/index2/search_feed.csv"
     autodata: "/index2/Smartsearch1y.csv"
+  destination:
+    directory: "public/data"
   db:
     url: "sqlite:///%kernel.project_dir%/var/app.db"
   replicas: 1

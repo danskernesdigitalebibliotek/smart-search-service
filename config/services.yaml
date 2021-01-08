@@ -16,6 +16,7 @@ services:
             $bindSourceBase: '%env(SOURCE_BASE)%'
             $bindSourceSearchFeed: '%env(SOURCE_SEARCH_FEED)%'
             $bindAutoDataSource: '%env(SOURCE_AUTO_DATA)%'
+            $bindDestinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

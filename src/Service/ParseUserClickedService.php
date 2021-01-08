@@ -15,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class ParseUserClickedService
 {
     private string $projectDir;
+    private string $destinationDirectory;
     private EntityManagerInterface $em;
     private UserClickedFeedRepository $userClickedRepos;
 
@@ -25,9 +26,10 @@ class ParseUserClickedService
      * @param EntityManagerInterface $entityManager
      * @param UserClickedFeedRepository $UserClickedFeedRepository
      */
-    public function __construct(string $bindProjectDir, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository)
+    public function __construct(string $bindProjectDir, string $bindDestinationDirectory, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository)
     {
         $this->projectDir = $bindProjectDir;
+        $this->destinationDirectory = $bindDestinationDirectory;
         $this->em = $entityManager;
         $this->userClickedRepos = $UserClickedFeedRepository;
     }
@@ -138,7 +140,7 @@ class ParseUserClickedService
         }
 
         $data = serialize($data);
-        file_put_contents($this->projectDir.'/public/'.$filename, $data);
+        file_put_contents($this->destinationDirectory.'/'.$filename, $data);
     }
 
     /**

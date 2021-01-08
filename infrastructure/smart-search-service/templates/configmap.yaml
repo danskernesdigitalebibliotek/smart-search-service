@@ -11,6 +11,7 @@ data:
   APP_SOURCE_SEARCH_FEED: {{ .Values.app.source.feed | quote }}
   APP_SOURCE_AUTO_DATA: {{ .Values.app.source.autodata | quote }}
   APP_DATABASE_URL: {{ .Values.app.db.url | quote }}
+  APP_DESTINATION_DIRECTORY: {{ .Values.app.destination.directory | quote }}
   PHP_PM_MAX_CHILDREN: {{ .Values.app.php.max_children | quote }}
   PHP_PM_START_SERVERS: {{ .Values.app.php.start_servers | quote }}
   PHP_PM_MIN_SPARE_SERVERS: {{ .Values.app.php.min_spare_servers | quote }}

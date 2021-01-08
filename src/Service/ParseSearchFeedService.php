@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class ParseSearchFeedService
 {
     private string $projectDir;
+    private string $destinationDirectory;
     private SearchFeedRepository $searchFeedRepos;
     private EntityManagerInterface $em;
 
@@ -26,9 +27,10 @@ class ParseSearchFeedService
      * @param EntityManagerInterface $entityManager
      * @param SearchFeedRepository $searchFeedRepository
      */
-    public function __construct(string $bindProjectDir, EntityManagerInterface $entityManager, SearchFeedRepository $searchFeedRepository)
+    public function __construct(string $bindProjectDir, string $bindDestinationDirectory, EntityManagerInterface $entityManager, SearchFeedRepository $searchFeedRepository)
     {
         $this->projectDir = $bindProjectDir;
+        $this->destinationDirectory = $bindDestinationDirectory;
         $this->em = $entityManager;
         $this->searchFeedRepos = $searchFeedRepository;
     }
@@ -71,9 +73,6 @@ class ParseSearchFeedService
                 if ($this->isFromPeriod($searchYear, $searchWeek)) {
                     $searchKey = $row->getCellAtIndex(2)->getValue();
                     $search_count = (int) $row->getCellAtIndex(3)->getValue();
-
-                    // Trying to fix string encoding.
-                    $searchKey = mb_convert_encoding($searchKey, 'UTF-8', mb_detect_encoding($searchKey));
 
                     // We exclude complex search strings.
                     if ($this->isValid($searchKey)) {
@@ -121,7 +120,7 @@ class ParseSearchFeedService
     public function writeFile(int $rows = 5000, string $filename = 'searchdata.csv'): void
     {
         $writer = WriterEntityFactory::createCSVWriter();
-        $writer->openToFile($this->projectDir.'/public/'.$filename);
+        $writer->openToFile($this->destinationDirectory.'/'.$filename);
 
         $query = $this->em->createQueryBuilder()
             ->select('s')

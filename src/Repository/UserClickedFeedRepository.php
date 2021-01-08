@@ -29,7 +29,7 @@ class UserClickedFeedRepository extends ServiceEntityRepository
     public function truncateTable(): void
     {
         $connection = $this->getEntityManager()->getConnection();
-        $sql = $connection->getDatabasePlatform()->getTruncateTableSQL(UserClickedFeed::class);
+        $sql = $connection->getDatabasePlatform()->getTruncateTableSQL('user_clicked_feed');
         $connection->executeStatement($sql);
     }
 }
