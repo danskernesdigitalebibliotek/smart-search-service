@@ -15,5 +15,10 @@ set -eux
 /var/www/html/bin/console doctrine:database:create --no-interaction --quiet
 /var/www/html/bin/console doctrine:migrations:migrate --no-interaction --quiet
 
-## Start the PHP process.
-/usr/local/bin/docker-php-entrypoint php-fpm
+## Start the PHP process and run command if given. This trick is need to cron imports as k8s cron jobs.
+if [ $# -eq 0 ]
+ then
+    /usr/local/bin/docker-php-entrypoint php-fpm
+  else
+    exec "$@"
+fi

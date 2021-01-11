@@ -34,7 +34,7 @@ spec:
                 - configMapRef:
                     name: {{ .Release.Name }}-configmap
               volumeMounts:
-                  - mountPath: /var/www/html/{{ .Values.app.destination.directory }}
+                  - mountPath: /var/www/html/{{ .Values.app.destination.folder }}
                     name: smart-search-data-disk
           restartPolicy: OnFailure
           volumes:
@@ -78,7 +78,7 @@ spec:
                 - configMapRef:
                     name: {{ .Release.Name }}-configmap
               volumeMounts:
-                  - mountPath: /var/www/html/{{ .Values.app.destination.directory }}
+                  - mountPath: /var/www/html/{{ .Values.app.destination.folder }}
                     name: smart-search-data-disk
           restartPolicy: OnFailure
           volumes:

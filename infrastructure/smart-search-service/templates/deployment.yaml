@@ -27,7 +27,7 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       containers:
-        - name: frontend
+        - name: symfony
           image: danskernesdigitalebibliotek/smart-search-service:{{ .Values.app.image.version }}
           imagePullPolicy: {{ .Values.app.image.imagePullPolicy }}
           resources:
@@ -51,7 +51,7 @@ spec:
             initialDelaySeconds: 0
             periodSeconds: 10
           volumeMounts:
-            - mountPath: /var/www/html/{{ .Values.app.destination.directory }}
+            - mountPath: /var/www/html/{{ .Values.app.destination.folder }}
               name: smart-search-data-disk
           env:
             - name: APP_SECRET
@@ -85,6 +85,9 @@ spec:
               port: 80
             initialDelaySeconds: 5
             periodSeconds: 10
+          volumeMounts:
+            - mountPath: /var/www/html/{{ .Values.app.destination.folder }}
+              name: smart-search-data-disk
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-nginx-config

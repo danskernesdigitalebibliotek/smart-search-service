@@ -8,7 +8,6 @@ ingress:
   enabled: true
   enableAuth: false
   cert: "letsencrypt"
-  path: "/api"
 
 cron:
   runAt: "0 1 * * 6"
@@ -24,7 +23,7 @@ app:
     feed: "/index2/search_feed.csv"
     autodata: "/index2/Smartsearch1y.csv"
   destination:
-    directory: "public/data"
+    folder: "public/data"
   db:
     url: "sqlite:///%kernel.project_dir%/var/app.db"
   replicas: 1
