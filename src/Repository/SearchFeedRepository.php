@@ -28,8 +28,9 @@ class SearchFeedRepository extends ServiceEntityRepository
      */
     public function truncateTable(): void
     {
+        $table = $this->getClassMetadata()->getTableName();
         $connection = $this->getEntityManager()->getConnection();
-        $sql = $connection->getDatabasePlatform()->getTruncateTableSQL('search_feed');
+        $sql = $connection->getDatabasePlatform()->getTruncateTableSQL($table);
         $connection->executeStatement($sql);
     }
 }

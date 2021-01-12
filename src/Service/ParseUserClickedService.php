@@ -23,6 +23,7 @@ class ParseUserClickedService
      * ParseUserClickedService constructor.
      *
      * @param string $bindProjectDir
+     * @param string $bindDestinationDirectory
      * @param EntityManagerInterface $entityManager
      * @param UserClickedFeedRepository $UserClickedFeedRepository
      */

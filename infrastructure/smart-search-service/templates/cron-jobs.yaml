@@ -24,6 +24,7 @@ spec:
                 - "bin/console"
                 - "app:parse:feed"
                 - "--no-debug"
+                - "--quiet"
               env:
                 - name: APP_SECRET
                   valueFrom:
@@ -68,6 +69,7 @@ spec:
                 - "bin/console"
                 - "app:parse:user"
                 - "--no-debug"
+                - "--quiet"
               env:
                 - name: APP_SECRET
                   valueFrom:

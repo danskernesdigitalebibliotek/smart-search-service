@@ -54,16 +54,17 @@ class ParseUserClickedCommand extends Command
     {
         $progressBar = new ProgressBar($output);
         $progressBar->setFormat('%memory:6s% [%bar%] %elapsed:6s% => %message%');
-        $progressBar->setMessage('Starting the download process (might take some time)...');
         $progressBar->start();
 
         $filename = $input->getOption('filename');
         if (is_null($filename)) {
+            $progressBar->setMessage('Starting the download process (might take some time)...');
             $filename = $this->fileDownloader->download($this->source);
         }
 
         $reset = $input->getOption('reset');
         if ($reset) {
+            $progressBar->setMessage('Resetting database...');
             $this->parseUserClickedService->reset();
         }
 
