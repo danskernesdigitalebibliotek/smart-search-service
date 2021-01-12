@@ -58,6 +58,9 @@ class ParseUserClickedService
         $rowsCount = 0;
         $rowsInserted = 0;
 
+        // Book keeping between batches.
+        $entities = [];
+
         $this->em->getConnection()->beginTransaction();
 
         /* @var Sheet $sheet */
@@ -82,26 +85,29 @@ class ParseUserClickedService
                 if (!empty($pid)) {
                     $rowsInserted++;
 
-                    $search = $row->getCellAtIndex(0)->getValue();
+                    $searchKey = $row->getCellAtIndex(0)->getValue();
                     $clicks = (int) $row->getCellAtIndex(2)->getValue();
 
-                    $entity = $this->userClickedRepos->findOneBy([
-                        'search' => $search,
+                    $entities[$searchKey] = array_key_exists($searchKey, $entities) ? $entities[$searchKey] : $this->userClickedRepos->findOneBy([
+                        'search' => $searchKey,
                         'pid' => $pid,
                     ]);
-                    if (is_null($entity)) {
-                        $entity = new UserClickedFeed();
-                        $entity->setPid($pid);
-                        $entity->setSearch($search);
-                        $this->em->persist($entity);
+                    if (is_null($entities[$searchKey])) {
+                        $entities[$searchKey] = new UserClickedFeed();
+                        $entities[$searchKey]->setPid($pid);
+                        $entities[$searchKey]->setSearch($searchKey);
+                        $this->em->persist($entities[$searchKey]);
                     }
-                    $entity->incriminateClicks($clicks);
+                    $entities[$searchKey]->incriminateClicks($clicks);
 
                     // Make it stick for every 500 rows.
                     if (0 === $rowsInserted % 5000) {
                         $this->em->flush();
                         $this->em->getConnection()->commit();
                         $this->em->clear();
+
+                        $entities = [];
+                        gc_collect_cycles();
 
                         // Start new transaction for the next batch.
                         $this->em->getConnection()->beginTransaction();

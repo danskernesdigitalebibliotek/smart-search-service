@@ -58,6 +58,9 @@ class ParseSearchFeedService
         $rowsCount = 0;
         $rowsInserted = 0;
 
+        // Book keeping between batches.
+        $entities = [];
+
         $this->em->getConnection()->beginTransaction();
 
         /* @var Sheet $sheet */
@@ -82,18 +85,19 @@ class ParseSearchFeedService
                     if ($this->isValid($searchKey)) {
                         $rowsInserted++;
 
-                        $entity = $this->searchFeedRepos->findOneBy(['search' => $searchKey]);
-                        if (is_null($entity)) {
-                            $entity = new SearchFeed();
-                            $entity->setYear($searchYear);
-                            $entity->setWeek($searchWeek);
-                            $entity->setSearch($searchKey);
-                            $this->em->persist($entity);
+                        $entities[$searchKey] = array_key_exists($searchKey, $entities) ? $entities[$searchKey] : $this->searchFeedRepos->findOneBy(['search' => $searchKey]);
+                        if (is_null($entities[$searchKey])) {
+                            $entities[$searchKey] = new SearchFeed();
+                            $entities[$searchKey]->setYear($searchYear);
+                            $entities[$searchKey]->setWeek($searchWeek);
+                            $entities[$searchKey]->setSearch($searchKey);
+
+                            $this->em->persist($entities[$searchKey]);
                         }
-                        $entity->incriminateLongPeriod($search_count);
+                        $entities[$searchKey]->incriminateLongPeriod($search_count);
 
                         if ($this->isFromPeriod($searchYear, $searchWeek, 4)) {
-                            $entity->incriminateShortPeriod($search_count);
+                            $entities[$searchKey]->incriminateShortPeriod($search_count);
                         }
 
                         // Make it stick for every 5000 rows.
@@ -101,6 +105,9 @@ class ParseSearchFeedService
                             $this->em->flush();
                             $this->em->getConnection()->commit();
                             $this->em->clear();
+
+                            $entities = [];
+                            gc_collect_cycles();
 
                             // Start new transaction for the next batch.
                             $this->em->getConnection()->beginTransaction();
