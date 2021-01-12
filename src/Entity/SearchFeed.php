@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Class SearchFeed.
  *
  * @ORM\Entity(repositoryClass=SearchFeedRepository::class)
+ * @ORM\Table(indexes={@ORM\Index(name="search_idx", columns={"search"})})
  */
 class SearchFeed
 {

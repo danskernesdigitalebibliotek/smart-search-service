@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=UserClickedFeedRepository::class)
+ * @ORM\Table(indexes={@ORM\Index(name="search_pid_idx", columns={"search","pid"})})
  */
 class UserClickedFeed
 {
