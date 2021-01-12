@@ -24,6 +24,7 @@ class ParseSearchFeedService
      * ParseSearchFeedService constructor.
      *
      * @param string $bindProjectDir
+     * @param string $bindDestinationDirectory
      * @param EntityManagerInterface $entityManager
      * @param SearchFeedRepository $searchFeedRepository
      */
@@ -55,6 +56,9 @@ class ParseSearchFeedService
         $reader->open($filename);
 
         $rowsCount = 0;
+        $rowsInserted = 0;
+
+        $this->em->getConnection()->beginTransaction();
 
         /* @var Sheet $sheet */
         foreach ($reader->getSheetIterator() as $sheet) {
@@ -67,7 +71,7 @@ class ParseSearchFeedService
 
                 // Yield progress.
                 if (0 == $rowsCount % 500) {
-                    yield $rowsCount;
+                    yield [ 'processed' => $rowsCount, 'inserted' => $rowsInserted ];
                 }
 
                 if ($this->isFromPeriod($searchYear, $searchWeek)) {
@@ -76,6 +80,8 @@ class ParseSearchFeedService
 
                     // We exclude complex search strings.
                     if ($this->isValid($searchKey)) {
+                        $rowsInserted++;
+
                         $entity = $this->searchFeedRepos->findOneBy(['search' => $searchKey]);
                         if (is_null($entity)) {
                             $entity = new SearchFeed();
@@ -90,10 +96,14 @@ class ParseSearchFeedService
                             $entity->incriminateShortPeriod($search_count);
                         }
 
-                        // Make it stick for every 500 rows.
-                        if (0 === $rowsCount % 500) {
+                        // Make it stick for every 5000 rows.
+                        if (0 === $rowsInserted % 5000) {
                             $this->em->flush();
+                            $this->em->getConnection()->commit();
                             $this->em->clear();
+
+                            // Start new transaction for the next batch.
+                            $this->em->getConnection()->beginTransaction();
                         }
                     }
                 }
@@ -101,6 +111,8 @@ class ParseSearchFeedService
 
             // Make it stick.
             $this->em->flush();
+            $this->em->getConnection()->commit();
+            $this->em->clear();
         }
 
         $reader->close();

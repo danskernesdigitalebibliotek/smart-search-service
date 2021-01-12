@@ -67,8 +67,8 @@ class ParseFeedCommand extends Command
             $this->parseSearchFeedService->reset();
         }
 
-        foreach ($this->parseSearchFeedService->parse($filename) as $count) {
-            $progressBar->setMessage('processed: '.$count);
+        foreach ($this->parseSearchFeedService->parse($filename) as $counts) {
+            $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted']);
             $progressBar->advance();
         }
 

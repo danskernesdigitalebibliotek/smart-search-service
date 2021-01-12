@@ -56,6 +56,9 @@ class ParseUserClickedService
         $reader->open($filename);
 
         $rowsCount = 0;
+        $rowsInserted = 0;
+
+        $this->em->getConnection()->beginTransaction();
 
         /* @var Sheet $sheet */
         foreach ($reader->getSheetIterator() as $sheet) {
@@ -71,12 +74,14 @@ class ParseUserClickedService
 
                 // Yield progress).
                 if (0 == $rowsCount % 500) {
-                    yield $rowsCount;
+                    yield [ 'processed' => $rowsCount, 'inserted' => $rowsInserted ];
                 }
 
                 // Find the linked data-well post id (PID).
                 $pid = $this->getPidFromPage($page);
                 if (!empty($pid)) {
+                    $rowsInserted++;
+
                     $search = $row->getCellAtIndex(0)->getValue();
                     $clicks = (int) $row->getCellAtIndex(2)->getValue();
 
@@ -93,15 +98,20 @@ class ParseUserClickedService
                     $entity->incriminateClicks($clicks);
 
                     // Make it stick for every 500 rows.
-                    if (0 === $rowsCount % 500) {
+                    if (0 === $rowsInserted % 5000) {
                         $this->em->flush();
+                        $this->em->getConnection()->commit();
                         $this->em->clear();
+
+                        // Start new transaction for the next batch.
+                        $this->em->getConnection()->beginTransaction();
                     }
                 }
             }
 
             // Make it stick.
             $this->em->flush();
+            $this->em->getConnection()->commit();
         }
 
         $reader->close();

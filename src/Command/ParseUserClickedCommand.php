@@ -67,8 +67,8 @@ class ParseUserClickedCommand extends Command
             $this->parseUserClickedService->reset();
         }
 
-        foreach ($this->parseUserClickedService->parse($filename) as $count) {
-            $progressBar->setMessage('processed: '.$count);
+        foreach ($this->parseUserClickedService->parse($filename) as $counts) {
+            $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted']);
             $progressBar->advance();
         }
 
