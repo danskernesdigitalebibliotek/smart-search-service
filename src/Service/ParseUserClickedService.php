@@ -48,7 +48,6 @@ class ParseUserClickedService
      *
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function parse(string $filename): \Generator
     {
@@ -78,13 +77,13 @@ class ParseUserClickedService
 
                 // Yield progress).
                 if (0 == $rowsCount % 500) {
-                    yield [ 'processed' => $rowsCount, 'inserted' => $rowsInserted ];
+                    yield ['processed' => $rowsCount, 'inserted' => $rowsInserted];
                 }
 
                 // Find the linked data-well post id (PID).
                 $pid = $this->getPidFromPage($page);
                 if (!empty($pid)) {
-                    $rowsInserted++;
+                    ++$rowsInserted;
 
                     $searchKey = $row->getCellAtIndex(0)->getValue();
                     $clicks = (int) $row->getCellAtIndex(2)->getValue();

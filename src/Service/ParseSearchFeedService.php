@@ -74,7 +74,7 @@ class ParseSearchFeedService
 
                 // Yield progress.
                 if (0 == $rowsCount % 500) {
-                    yield [ 'processed' => $rowsCount, 'inserted' => $rowsInserted ];
+                    yield ['processed' => $rowsCount, 'inserted' => $rowsInserted];
                 }
 
                 if ($this->isFromPeriod($searchYear, $searchWeek)) {
@@ -83,7 +83,7 @@ class ParseSearchFeedService
 
                     // We exclude complex search strings.
                     if ($this->isValid($searchKey)) {
-                        $rowsInserted++;
+                        ++$rowsInserted;
 
                         $entities[$searchKey] = array_key_exists($searchKey, $entities) ? $entities[$searchKey] : $this->searchFeedRepos->findOneBy(['search' => $searchKey]);
                         if (is_null($entities[$searchKey])) {

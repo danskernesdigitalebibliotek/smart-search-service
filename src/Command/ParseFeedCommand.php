@@ -4,6 +4,10 @@ namespace App\Command;
 
 use App\Service\FileDownloaderService;
 use App\Service\ParseSearchFeedService;
+use Box\Spout\Common\Exception\SpoutException;
+use Doctrine\DBAL\Exception;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,6 +22,7 @@ class ParseFeedCommand extends Command
     private string $source;
     private FileDownloaderService $fileDownloader;
     private ParseSearchFeedService $parseSearchFeedService;
+    private LoggerInterface $logger;
 
     protected static $defaultName = 'app:parse:feed';
 
@@ -28,11 +33,12 @@ class ParseFeedCommand extends Command
      * @param FileDownloaderService $fileDownloader
      * @param ParseSearchFeedService $parseSearchFeedService
      */
-    public function __construct(string $bindSourceSearchFeed, FileDownloaderService $fileDownloader, ParseSearchFeedService $parseSearchFeedService)
+    public function __construct(string $bindSourceSearchFeed, FileDownloaderService $fileDownloader, ParseSearchFeedService $parseSearchFeedService, LoggerInterface $informationLogger)
     {
         $this->source = $bindSourceSearchFeed;
         $this->fileDownloader = $fileDownloader;
         $this->parseSearchFeedService = $parseSearchFeedService;
+        $this->logger = $informationLogger;
 
         parent::__construct();
     }
@@ -58,26 +64,48 @@ class ParseFeedCommand extends Command
 
         $filename = $input->getOption('filename');
         if (is_null($filename)) {
+            $this->logger->info('Starting download of file ('.$this->source.')');
             $progressBar->setMessage('Starting the download process (might take some time)...');
-            $filename = $this->fileDownloader->download($this->source);
+            try {
+                $filename = $this->fileDownloader->download($this->source);
+            } catch (GuzzleException $e) {
+                $this->logger->info('Download failed of file ('.$this->source.') : '.$e->getMessage());
+            }
         }
 
         $reset = $input->getOption('reset');
         if ($reset) {
+            $this->logger->info('Resetting database');
             $progressBar->setMessage('Resetting database...');
-            $this->parseSearchFeedService->reset();
+            try {
+                $this->parseSearchFeedService->reset();
+            } catch (Exception $e) {
+                $this->logger->error('Resetting database failed : '.$e->getMessage());
+            }
         }
 
-        foreach ($this->parseSearchFeedService->parse($filename) as $counts) {
-            $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted']);
-            $progressBar->advance();
+        try {
+            foreach ($this->parseSearchFeedService->parse($filename) as $counts) {
+                $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted']);
+                $progressBar->advance();
+            }
+        } catch (SpoutException $e) {
+            $this->logger->error('Error reading CSV file : '.$e->getMessage());
         }
 
+        $this->logger->info('Writing output file');
         $progressBar->setMessage('Writing output file...');
-        $this->parseSearchFeedService->writeFile();
+        try {
+            $this->parseSearchFeedService->writeFile();
+        } catch (SpoutException $e) {
+            $this->logger->error('Error writing CSV file : '.$e->getMessage());
+        }
+
         $progressBar->finish();
 
         $this->fileDownloader->cleanUp($this->source);
+
+        $this->logger->info('Completed');
 
         return Command::SUCCESS;
     }

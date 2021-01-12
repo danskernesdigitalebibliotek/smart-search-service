@@ -50,8 +50,7 @@ class FileDownloaderService
 
         if (!is_null($input)) {
             stream_copy_to_stream($input, $dest);
-        }
-        else {
+        } else {
             throw new \Exception('Input stream do not exists');
         }
 

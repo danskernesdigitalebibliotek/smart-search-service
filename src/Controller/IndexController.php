@@ -10,7 +10,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class IndexController extends AbstractController
 {
-
     private string $projectDir;
     private string $destinationDirectory;
 
@@ -28,7 +27,7 @@ class IndexController extends AbstractController
     public function index(Request $request): Response
     {
         $finder = new Finder();
-        $finder->files()->in($this->destinationDirectory)->name('*.txt')->name('*.csv');;
+        $finder->files()->in($this->destinationDirectory)->name('*.txt')->name('*.csv');
         $links = [];
 
         if ($finder->hasResults()) {
@@ -40,7 +39,7 @@ class IndexController extends AbstractController
                 $links[] = [
                     'name' => $fileNameWithExtension,
                     'url' => $request->getUriForPath($relativePath),
-                    'date' => $date = \DateTime::createFromFormat( 'U', (string)$file->getCTime()),
+                    'date' => $date = \DateTime::createFromFormat('U', (string) $file->getCTime()),
                 ];
             }
         }

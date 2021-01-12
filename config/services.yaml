@@ -17,6 +17,7 @@ services:
             $bindSourceSearchFeed: '%env(SOURCE_SEARCH_FEED)%'
             $bindAutoDataSource: '%env(SOURCE_AUTO_DATA)%'
             $bindDestinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
+            $bindTraceId: '%env(traceId:HTTP_X_REQUEST_ID)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -27,6 +28,13 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
             - '../src/Tests/'
+
+    monolog.formatter.json:
+        class: Monolog\Formatter\JsonFormatter
+
+    App\Logger\TraceIdProcessor:
+        tags:
+            - { name: monolog.processor }
 
     # controllers are imported separately to make sure services can be injected
     # as action arguments even if you don't extend any base controller class
