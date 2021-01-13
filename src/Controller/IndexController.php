@@ -40,6 +40,7 @@ class IndexController extends AbstractController
                     'name' => $fileNameWithExtension,
                     'url' => $request->getUriForPath($relativePath),
                     'date' => $date = \DateTime::createFromFormat('U', (string) $file->getCTime()),
+                    'size' => $this->formatByteSize($file->getSize()),
                 ];
             }
         }
@@ -47,5 +48,44 @@ class IndexController extends AbstractController
         return $this->render('index/index.html.twig', [
             'links' => $links,
         ]);
+    }
+
+    /**
+     * Format file size bytes into formatted size string.
+     *
+     * @param int $bytes
+     *   The size in bytes.
+     *
+     * @return string
+     *   Formatted size string.
+     */
+    private function formatByteSize(int $bytes): string
+    {
+        if ($bytes >= 1073741824)
+        {
+            $bytes = number_format($bytes / 1073741824, 2) . ' GB';
+        }
+        elseif ($bytes >= 1048576)
+        {
+            $bytes = number_format($bytes / 1048576, 2) . ' MB';
+        }
+        elseif ($bytes >= 1024)
+        {
+            $bytes = number_format($bytes / 1024, 2) . ' KB';
+        }
+        elseif ($bytes > 1)
+        {
+            $bytes = $bytes . ' bytes';
+        }
+        elseif ($bytes == 1)
+        {
+            $bytes = $bytes . ' byte';
+        }
+        else
+        {
+            $bytes = '0 bytes';
+        }
+
+        return $bytes;
     }
 }

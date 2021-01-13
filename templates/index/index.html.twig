@@ -28,7 +28,7 @@
         <div class="info">
             <h2 class="title">Generated files</h2>
             {% for link in links  %}
-                <li><a href="{{ link.url }}" target="_blank">{{ link.name }}</a> (Last updated: {{ link.date|date("d. M H:i") }})</li>
+                <li><a href="{{ link.url }}" target="_blank">{{ link.name }}</a> (Last updated: {{ link.date|date("d. M H:i") }} / Size: {{ link.size }})</li>
             {% endfor %}
         </div>
     </section>
