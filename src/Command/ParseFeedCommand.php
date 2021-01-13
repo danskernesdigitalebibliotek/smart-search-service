@@ -70,6 +70,7 @@ class ParseFeedCommand extends Command
                 $filename = $this->fileDownloader->download($this->source);
             } catch (GuzzleException $e) {
                 $this->logger->info('Download failed of file ('.$this->source.') : '.$e->getMessage());
+                return Command::FAILURE;
             }
         }
 
@@ -81,6 +82,7 @@ class ParseFeedCommand extends Command
                 $this->parseSearchFeedService->reset();
             } catch (Exception $e) {
                 $this->logger->error('Resetting database failed : '.$e->getMessage());
+                return Command::FAILURE;
             }
         }
 
@@ -91,6 +93,7 @@ class ParseFeedCommand extends Command
             }
         } catch (SpoutException $e) {
             $this->logger->error('Error reading CSV file : '.$e->getMessage());
+            return Command::FAILURE;
         }
 
         $this->logger->info('Writing output file');
@@ -99,6 +102,7 @@ class ParseFeedCommand extends Command
             $this->parseSearchFeedService->writeFile();
         } catch (SpoutException $e) {
             $this->logger->error('Error writing CSV file : '.$e->getMessage());
+            return Command::FAILURE;
         }
 
         $progressBar->finish();
