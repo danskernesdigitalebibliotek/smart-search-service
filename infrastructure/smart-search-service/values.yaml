@@ -1,0 +1,46 @@
+# Default values for cover-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+env: "prod"
+
+ingress:
+  enabled: true
+  enableAuth: false
+  cert: "letsencrypt"
+
+cron:
+  runAt: "0 1 * * 6"
+  successfulLimit: 2
+  failedLimit: 1
+  startingDeadlineSeconds: 300
+
+app:
+  image:
+    version: "latest"
+    imagePullPolicy: "IfNotPresent"
+  source:
+    base: "http://www.kpiindex.com/"
+    feed: "/index2/search_feed.csv"
+    autodata: "/index2/Smartsearch1y.csv"
+  destination:
+    folder: "public/data"
+  db:
+    url: "sqlite:///%kernel.project_dir%/var/app.db"
+  replicas: 1
+  cors_allow_origin: "*"
+  trusted_proxies: "127.0.0.1,10.240.0.0/16"
+  php:
+    max_children: "80"
+    start_servers: "15"
+    min_spare_servers: "15"
+    max_spare_servers: "30"
+  storage:
+    class: "azurefile-premium-retain"
+    size: "100Gi"
+    access: "ReadWriteMany"
+
+nginx:
+  exporter:
+    image:
+      version: 0.6.0
