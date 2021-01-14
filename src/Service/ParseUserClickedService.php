@@ -8,6 +8,7 @@ use Box\Spout\Common\Entity\Row;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Box\Spout\Reader\CSV\Sheet;
 use Doctrine\ORM\EntityManagerInterface;
+use ForceUTF8\Encoding;
 
 /**
  * Class ParseUserClickedService.
@@ -144,6 +145,9 @@ class ParseUserClickedService
         $iterable = $stmt->iterateAssociative();
         $data = [];
         foreach ($iterable as $row) {
+            // Force encoding to UTF8 for the search string.
+            $row['search'] = Encoding::toUTF8($row['search']);
+
             // As the data is ordered by click for each searches we can limit it to the 5 object pr. search as we known
             // that the data is sorted correctly.
             if (isset($data[$row['search']]) && count($data[$row['search']]) >= 5) {
