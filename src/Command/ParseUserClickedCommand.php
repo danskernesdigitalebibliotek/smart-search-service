@@ -32,6 +32,7 @@ class ParseUserClickedCommand extends Command
      * @param string $bindAutoDataSource
      * @param FileDownloaderService $fileDownloader
      * @param ParseUserClickedService $parseUserClickedService
+     * @param LoggerInterface $informationLogger
      */
     public function __construct(string $bindAutoDataSource, FileDownloaderService $fileDownloader, ParseUserClickedService $parseUserClickedService, LoggerInterface $informationLogger)
     {
