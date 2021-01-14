@@ -32,6 +32,7 @@ class ParseFeedCommand extends Command
      * @param string $bindSourceSearchFeed
      * @param FileDownloaderService $fileDownloader
      * @param ParseSearchFeedService $parseSearchFeedService
+     * @param LoggerInterface $informationLogger
      */
     public function __construct(string $bindSourceSearchFeed, FileDownloaderService $fileDownloader, ParseSearchFeedService $parseSearchFeedService, LoggerInterface $informationLogger)
     {
