@@ -9,6 +9,7 @@ use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Box\Spout\Reader\CSV\Sheet;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use ForceUTF8\Encoding;
 
 /**
  * Class ParseSearchFeedService.
@@ -150,7 +151,10 @@ class ParseSearchFeedService
 
         $iterable = $query->toIterable();
         foreach ($iterable as $entity) {
-            $values = [$entity->getSearch(), $entity->getLongPeriod(), $entity->getShortPeriod()];
+            // Force encoding to UTF8 for the search string.
+            $search = Encoding::toUTF8($entity->getSearch());
+
+            $values = [$search, $entity->getLongPeriod(), $entity->getShortPeriod()];
             $rowFromValues = WriterEntityFactory::createRowFromArray($values);
             $writer->addRow($rowFromValues);
         }
