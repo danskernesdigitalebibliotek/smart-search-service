@@ -141,6 +141,9 @@
     "monolog/monolog": {
         "version": "2.2.0"
     },
+    "neitanod/forceutf8": {
+        "version": "v2.0.4"
+    },
     "netresearch/jsonmapper": {
         "version": "v2.1.0"
     },
