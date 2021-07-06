@@ -72,6 +72,7 @@ class ParseUserClickedCommand extends Command
                 $filename = $this->fileDownloader->download($this->source);
             } catch (GuzzleException $e) {
                 $this->logger->info('Download failed of file ('.$this->source.') : '.$e->getMessage());
+
                 return Command::FAILURE;
             }
         }
@@ -84,6 +85,7 @@ class ParseUserClickedCommand extends Command
                 $this->parseUserClickedService->reset();
             } catch (Exception $e) {
                 $this->logger->error('Resetting database failed : '.$e->getMessage());
+
                 return Command::FAILURE;
             }
         }
@@ -95,6 +97,7 @@ class ParseUserClickedCommand extends Command
             }
         } catch (SpoutException $e) {
             $this->logger->error('Error reading CSV file : '.$e->getMessage());
+
             return Command::FAILURE;
         }
 
@@ -104,6 +107,7 @@ class ParseUserClickedCommand extends Command
             $this->parseUserClickedService->writeFile();
         } catch (\Exception $e) {
             $this->logger->error('Error writing serialized text file : '.$e->getMessage());
+
             return Command::FAILURE;
         }
         $progressBar->finish();
