@@ -1,6 +1,8 @@
 {
+    "name": "danskernesdigitalebibliotek/smart-search-service",
+    "description": "Cover service imports for the danish libraries",
     "type": "project",
-    "license": "proprietary",
+    "license": "AGPL-3.0-only",
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
@@ -9,7 +11,7 @@
         "ext-iconv": "*",
         "ext-sqlite3": "*",
         "box/spout": "^3.1",
-        "composer/package-versions-deprecated": "1.11.99.1",
+        "composer/package-versions-deprecated": "^1.11",
         "doctrine/annotations": "^1.11",
         "doctrine/doctrine-bundle": "^2.2",
         "doctrine/doctrine-migrations-bundle": "^3.0",
