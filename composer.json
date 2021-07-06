@@ -1,15 +1,17 @@
 {
+    "name": "danskernesdigitalebibliotek/smart-search-service",
+    "description": "Cover service imports for the danish libraries",
     "type": "project",
-    "license": "proprietary",
+    "license": "AGPL-3.0-only",
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.4",
+        "php": "^7.4 | ^8.0",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-sqlite3": "*",
         "box/spout": "^3.1",
-        "composer/package-versions-deprecated": "1.11.99.1",
+        "composer/package-versions-deprecated": "^1.11",
         "doctrine/annotations": "^1.11",
         "doctrine/doctrine-bundle": "^2.2",
         "doctrine/doctrine-migrations-bundle": "^3.0",
@@ -31,8 +33,12 @@
     "require-dev": {
         "escapestudios/symfony2-coding-standard": "^3.11",
         "friendsofphp/php-cs-fixer": "^2.17",
+        "phpunit/phpunit": "^9.5",
         "psalm/plugin-symfony": "^2.1",
+        "symfony/browser-kit": "^5.2",
+        "symfony/css-selector": "^5.2",
         "symfony/maker-bundle": "^1.26",
+        "symfony/phpunit-bridge": "^5.3",
         "vimeo/psalm": "^4.3"
     },
     "config": {
@@ -71,37 +77,14 @@
         "post-update-cmd": [
             "@auto-scripts"
         ],
-        "check": [
-            "@check-coding-standards"
-        ],
-        "check-coding-standards/php-cs-fixer": [
+        "check-coding-standards": [
             "php-cs-fixer --config=.php_cs.dist fix --dry-run --format=checkstyle"
         ],
-        "check-coding-standards/phpcs": [
-            "phpcs --standard=phpcs.xml.dist"
-        ],
-        "check-coding-standards": [
-            "@check-coding-standards/php-cs-fixer",
-            "@check-coding-standards/phpcs"
-        ],
-        "apply-coding-standards/php-cs-fixer": [
-            "php-cs-fixer --config=.php_cs.dist fix"
-        ],
-        "apply-coding-standards/phpcs": [
-            "phpcbf --standard=phpcs.xml.dist"
-        ],
         "apply-coding-standards": [
-            "@apply-coding-standards/php-cs-fixer",
-            "@apply-coding-standards/phpcs"
+            "php-cs-fixer --config=.php_cs.dist fix"
         ],
         "psalm": [
             "./vendor/bin/psalm --show-info=true"
-        ],
-        "actions/phpcs": [
-            "phpcs --standard=phpcs.xml.dist --report=checkstyle"
-        ],
-        "actions/phpcsfixer": [
-            "php-cs-fixer --config=.php_cs.dist fix --dry-run --diff --diff-format=udiff"
         ]
     },
     "conflict": {
