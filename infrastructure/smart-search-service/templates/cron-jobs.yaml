@@ -1,5 +1,5 @@
 ---
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   namespace: {{ .Release.Namespace }}
@@ -45,7 +45,7 @@ spec:
                 claimName: smart-search-managed-disk
 
 ---
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   namespace: {{ .Release.Namespace }}
