@@ -59,7 +59,7 @@ class ParseSearchFeedService
         $rowsCount = 0;
         $rowsInserted = 0;
 
-        // Book keeping between batches.
+        // Bookkeeping between batches.
         $entities = [];
 
         $this->em->getConnection()->beginTransaction();
