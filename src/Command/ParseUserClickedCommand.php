@@ -4,7 +4,6 @@ namespace App\Command;
 
 use App\Service\FileDownloaderService;
 use App\Service\ParseUserClickedService;
-use Box\Spout\Common\Exception\SpoutException;
 use Doctrine\DBAL\Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -75,9 +74,7 @@ class ParseUserClickedCommand extends Command
 
             try {
                 $filename = $this->filesystem->tempnam('/tmp', 'downloaded_');
-                while ($this->fileDownloader->download($this->source, $filename)) {
-                    $progressBar->advance();
-                }
+                $this->fileDownloader->download($this->source, $filename);
             } catch (TransportExceptionInterface $e) {
                 $this->logger->info('Download failed of file ('.$this->source.') : '.$e->getMessage());
 
@@ -101,10 +98,10 @@ class ParseUserClickedCommand extends Command
 
         try {
             foreach ($this->parseUserClickedService->parse($filename) as $counts) {
-                $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted']);
+                $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted'].' updated: '.$counts['updated']);
                 $progressBar->advance();
             }
-        } catch (SpoutException $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error reading CSV file : '.$e->getMessage());
 
             return Command::FAILURE;

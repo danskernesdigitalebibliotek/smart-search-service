@@ -5,9 +5,6 @@
     "amphp/byte-stream": {
         "version": "v1.8.0"
     },
-    "box/spout": {
-        "version": "v3.1.0"
-    },
     "composer/package-versions-deprecated": {
         "version": "1.11.99.1"
     },

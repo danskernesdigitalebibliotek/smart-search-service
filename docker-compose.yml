@@ -41,3 +41,16 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=frontend"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${COMPOSE_DOMAIN}`)"
+
+  mariadb:
+    image: itkdev/mariadb
+    networks:
+      - app
+    ports:
+      - '3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_USER=db
+      - MYSQL_PASSWORD=db
+      - MYSQL_DATABASE=db
+      #- ENCRYPT=1 # Uncomment to enable database encryption.
