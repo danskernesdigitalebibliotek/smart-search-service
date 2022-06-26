@@ -6,13 +6,14 @@ use App\Service\FileDownloaderService;
 use App\Service\ParseUserClickedService;
 use Box\Spout\Common\Exception\SpoutException;
 use Doctrine\DBAL\Exception;
-use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
  * Class ParseUserClickedCommand.
@@ -25,6 +26,7 @@ class ParseUserClickedCommand extends Command
     private LoggerInterface $logger;
 
     protected static $defaultName = 'app:parse:user';
+    private Filesystem $filesystem;
 
     /**
      * ParseUserClickedCommand constructor.
@@ -40,6 +42,8 @@ class ParseUserClickedCommand extends Command
         $this->fileDownloader = $fileDownloader;
         $this->parseUserClickedService = $parseUserClickedService;
         $this->logger = $informationLogger;
+
+        $this->filesystem = new Filesystem();
 
         parent::__construct();
     }
@@ -67,10 +71,14 @@ class ParseUserClickedCommand extends Command
         if (is_null($filename)) {
             $this->logger->info('Starting download of file ('.$this->source.')');
             $progressBar->setMessage('Starting the download process (might take some time)...');
+            $progressBar->display();
 
             try {
-                $filename = $this->fileDownloader->download($this->source);
-            } catch (GuzzleException $e) {
+                $filename = $this->filesystem->tempnam('/tmp', 'downloaded_');
+                while ($this->fileDownloader->download($this->source, $filename)) {
+                    $progressBar->advance();
+                }
+            } catch (TransportExceptionInterface $e) {
                 $this->logger->info('Download failed of file ('.$this->source.') : '.$e->getMessage());
 
                 return Command::FAILURE;
@@ -81,6 +89,7 @@ class ParseUserClickedCommand extends Command
         if ($reset) {
             $this->logger->info('Resetting database');
             $progressBar->setMessage('Resetting database...');
+            $progressBar->display();
             try {
                 $this->parseUserClickedService->reset();
             } catch (Exception $e) {
@@ -103,6 +112,7 @@ class ParseUserClickedCommand extends Command
 
         $this->logger->info('Writing output file');
         $progressBar->setMessage('Writing output file...');
+        $progressBar->display();
         try {
             $this->parseUserClickedService->writeFile();
         } catch (\Exception $e) {

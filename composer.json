@@ -16,7 +16,6 @@
         "doctrine/doctrine-bundle": "^2.2",
         "doctrine/doctrine-migrations-bundle": "^3.0",
         "doctrine/orm": "^2.8",
-        "guzzlehttp/guzzle": "^7.2",
         "neitanod/forceutf8": "^2.0",
         "symfony/console": "5.2.*",
         "symfony/dotenv": "5.2.*",
@@ -81,10 +80,10 @@
         "post-update-cmd": [
             "@auto-scripts"
         ],
-        "check-coding-standards": [
+        "coding-standards-check": [
             "php-cs-fixer --config=.php_cs.dist fix --dry-run --format=checkstyle"
         ],
-        "apply-coding-standards": [
+        "coding-standards-apply": [
             "php-cs-fixer --config=.php_cs.dist fix"
         ],
         "psalm": [

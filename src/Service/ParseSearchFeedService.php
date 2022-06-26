@@ -50,6 +50,7 @@ class ParseSearchFeedService
      *
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
+     * @throws \Doctrine\DBAL\Exception
      */
     public function parse(string $filename): \Generator
     {

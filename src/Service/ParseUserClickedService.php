@@ -15,7 +15,6 @@ use ForceUTF8\Encoding;
  */
 class ParseUserClickedService
 {
-    private string $projectDir;
     private string $destinationDirectory;
     private EntityManagerInterface $em;
     private UserClickedFeedRepository $userClickedRepos;
@@ -23,14 +22,12 @@ class ParseUserClickedService
     /**
      * ParseUserClickedService constructor.
      *
-     * @param string $bindProjectDir
      * @param string $bindDestinationDirectory
      * @param EntityManagerInterface $entityManager
      * @param UserClickedFeedRepository $UserClickedFeedRepository
      */
-    public function __construct(string $bindProjectDir, string $bindDestinationDirectory, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository)
+    public function __construct(string $bindDestinationDirectory, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository)
     {
-        $this->projectDir = $bindProjectDir;
         $this->destinationDirectory = $bindDestinationDirectory;
         $this->em = $entityManager;
         $this->userClickedRepos = $UserClickedFeedRepository;
@@ -130,7 +127,6 @@ class ParseUserClickedService
      * @param string $filename
      *   The file name to store the serialized data object in public folder
      *
-     * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
     public function writeFile(string $filename = 'autodata.txt'): void
