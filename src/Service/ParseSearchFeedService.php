@@ -82,8 +82,7 @@ class ParseSearchFeedService
 
                         $this->em->persist($entities[$searchKey]);
                         ++$rowsInserted;
-                    }
-                    else {
+                    } else {
                         ++$rowsUpdated;
                     }
                     $entities[$searchKey]->incriminateLongPeriod($search_count);

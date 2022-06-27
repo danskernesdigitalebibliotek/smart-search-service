@@ -57,7 +57,7 @@ class ParseUserClickedService
 
         $this->em->getConnection()->beginTransaction();
 
-        $iterator = $this->CsvReader->read($filename);
+        $iterator = $this->CsvReader->read($filename, ';');
         foreach ($iterator as $line) {
             ++$rowsCount;
 
@@ -75,8 +75,6 @@ class ParseUserClickedService
             // Find the linked data-well post id (PID).
             $pid = $this->getPidFromPage($page);
             if (!empty($pid)) {
-
-
                 $searchKey = htmlspecialchars_decode($line[0]);
                 $clicks = (int) $line[2];
 
@@ -91,14 +89,13 @@ class ParseUserClickedService
 
                     $this->em->persist($entities[$searchKey]);
                     ++$rowsInserted;
-                }
-                else {
+                } else {
                     ++$rowsUpdated;
                 }
                 $entities[$searchKey]->incriminateClicks($clicks);
 
                 // Make it stick for every 500 rows.
-                if (0 === count($entities[$searchKey]) % 500) {
+                if (0 === count($entities) % 500) {
                     $this->em->flush();
                     $this->em->getConnection()->commit();
                     $this->em->clear();
