@@ -100,7 +100,7 @@ class ParseFeedCommand extends Command
                 $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted'].' updated: '.$counts['updated']);
                 $progressBar->advance();
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->error('Error reading CSV file : '.$e->getMessage());
 
             return Command::FAILURE;
@@ -111,7 +111,7 @@ class ParseFeedCommand extends Command
         $progressBar->display();
         try {
             $this->parseSearchFeedService->writeFile();
-        } catch (SpoutException $e) {
+        } catch (\Exception $e) {
             $this->logger->error('Error writing CSV file : '.$e->getMessage());
 
             return Command::FAILURE;

@@ -72,39 +72,42 @@ class ParseUserClickedService
                 yield ['processed' => $rowsCount, 'inserted' => $rowsInserted, 'updated' => $rowsUpdated];
             }
 
-            // Find the linked data-well post id (PID).
-            $pid = $this->getPidFromPage($page);
-            if (!empty($pid)) {
-                $searchKey = htmlspecialchars_decode($line[0]);
-                $clicks = (int) $line[2];
+            // We need to test if there was any data as the input is very unstable.
+            if (null !== $page) {
+                // Find the linked data-well post id (PID).
+                $pid = $this->getPidFromPage($page);
+                if (!empty($pid)) {
+                    $searchKey = htmlspecialchars_decode($line[0]);
+                    $clicks = (int) $line[2];
 
-                $entities[$searchKey] = array_key_exists($searchKey, $entities) ? $entities[$searchKey] : $this->userClickedRepos->findOneBy([
-                    'search' => $searchKey,
-                    'pid' => $pid,
-                ]);
-                if (is_null($entities[$searchKey])) {
-                    $entities[$searchKey] = new UserClickedFeed();
-                    $entities[$searchKey]->setPid($pid);
-                    $entities[$searchKey]->setSearch($searchKey);
+                    $entities[$searchKey] = array_key_exists($searchKey, $entities) ? $entities[$searchKey] : $this->userClickedRepos->findOneBy([
+                        'search' => $searchKey,
+                        'pid' => $pid,
+                    ]);
+                    if (is_null($entities[$searchKey])) {
+                        $entities[$searchKey] = new UserClickedFeed();
+                        $entities[$searchKey]->setPid($pid);
+                        $entities[$searchKey]->setSearch($searchKey);
 
-                    $this->em->persist($entities[$searchKey]);
-                    ++$rowsInserted;
-                } else {
-                    ++$rowsUpdated;
-                }
-                $entities[$searchKey]->incriminateClicks($clicks);
+                        $this->em->persist($entities[$searchKey]);
+                        ++$rowsInserted;
+                    } else {
+                        ++$rowsUpdated;
+                    }
+                    $entities[$searchKey]->incriminateClicks($clicks);
 
-                // Make it stick for every 500 rows.
-                if (0 === count($entities) % 500) {
-                    $this->em->flush();
-                    $this->em->getConnection()->commit();
-                    $this->em->clear();
+                    // Make it stick for every 500 rows.
+                    if (0 === count($entities) % 500) {
+                        $this->em->flush();
+                        $this->em->getConnection()->commit();
+                        $this->em->clear();
 
-                    $entities = [];
-                    gc_collect_cycles();
+                        $entities = [];
+                        gc_collect_cycles();
 
-                    // Start new transaction for the next batch.
-                    $this->em->getConnection()->beginTransaction();
+                        // Start new transaction for the next batch.
+                        $this->em->getConnection()->beginTransaction();
+                    }
                 }
             }
         }
@@ -132,6 +135,7 @@ class ParseUserClickedService
         $stmt->executeStatement();
 
         $iterable = $stmt->iterateAssociative();
+
         $data = [];
         foreach ($iterable as $row) {
             // Force encoding to UTF8 for the search string.
