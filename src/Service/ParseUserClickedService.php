@@ -4,9 +4,6 @@ namespace App\Service;
 
 use App\Entity\UserClickedFeed;
 use App\Repository\UserClickedFeedRepository;
-use Box\Spout\Common\Entity\Row;
-use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
-use Box\Spout\Reader\CSV\Sheet;
 use Doctrine\ORM\EntityManagerInterface;
 use ForceUTF8\Encoding;
 
@@ -15,25 +12,25 @@ use ForceUTF8\Encoding;
  */
 class ParseUserClickedService
 {
-    private string $projectDir;
     private string $destinationDirectory;
     private EntityManagerInterface $em;
     private UserClickedFeedRepository $userClickedRepos;
+    private CsvReaderService $CsvReader;
 
     /**
      * ParseUserClickedService constructor.
      *
-     * @param string $bindProjectDir
      * @param string $bindDestinationDirectory
      * @param EntityManagerInterface $entityManager
      * @param UserClickedFeedRepository $UserClickedFeedRepository
+     * @param CsvReaderService $CsvReaderService
      */
-    public function __construct(string $bindProjectDir, string $bindDestinationDirectory, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository)
+    public function __construct(string $bindDestinationDirectory, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository, CsvReaderService $CsvReaderService)
     {
-        $this->projectDir = $bindProjectDir;
         $this->destinationDirectory = $bindDestinationDirectory;
         $this->em = $entityManager;
         $this->userClickedRepos = $UserClickedFeedRepository;
+        $this->CsvReader = $CsvReaderService;
     }
 
     /**
@@ -47,47 +44,41 @@ class ParseUserClickedService
      * @return \Generator
      *   Yield for every 500 rows
      *
-     * @throws \Box\Spout\Common\Exception\IOException
-     * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
+     * @throws \Doctrine\DBAL\Exception
      */
     public function parse(string $filename): \Generator
     {
-        $reader = ReaderEntityFactory::createCSVReader();
-        $reader->setFieldDelimiter(';');
-        $reader->open($filename);
-
         $rowsCount = 0;
         $rowsInserted = 0;
+        $rowsUpdated = 0;
 
-        // Book keeping between batches.
+        // Bookkeeping between batches.
         $entities = [];
 
         $this->em->getConnection()->beginTransaction();
 
-        /* @var Sheet $sheet */
-        foreach ($reader->getSheetIterator() as $sheet) {
-            /* @var Row $row */
-            foreach ($sheet->getRowIterator() as $row) {
-                ++$rowsCount;
+        $iterator = $this->CsvReader->read($filename, ';');
+        foreach ($iterator as $line) {
+            ++$rowsCount;
 
-                // Skip first row which is headers.
-                if (1 === $rowsCount) {
-                    continue;
-                }
-                $page = $row->getCellAtIndex(1)->getValue();
+            // Skip first row which is headers.
+            if (1 === $rowsCount) {
+                continue;
+            }
+            $page = $line[1];
 
-                // Yield progress).
-                if (0 == $rowsCount % 500) {
-                    yield ['processed' => $rowsCount, 'inserted' => $rowsInserted];
-                }
+            // Yield progress.
+            if (0 == $rowsCount % 500) {
+                yield ['processed' => $rowsCount, 'inserted' => $rowsInserted, 'updated' => $rowsUpdated];
+            }
 
+            // We need to test if there was any data as the input is very unstable.
+            if (null !== $page) {
                 // Find the linked data-well post id (PID).
                 $pid = $this->getPidFromPage($page);
                 if (!empty($pid)) {
-                    ++$rowsInserted;
-
-                    $searchKey = $row->getCellAtIndex(0)->getValue();
-                    $clicks = (int) $row->getCellAtIndex(2)->getValue();
+                    $searchKey = htmlspecialchars_decode($line[0]);
+                    $clicks = (int) $line[2];
 
                     $entities[$searchKey] = array_key_exists($searchKey, $entities) ? $entities[$searchKey] : $this->userClickedRepos->findOneBy([
                         'search' => $searchKey,
@@ -97,12 +88,16 @@ class ParseUserClickedService
                         $entities[$searchKey] = new UserClickedFeed();
                         $entities[$searchKey]->setPid($pid);
                         $entities[$searchKey]->setSearch($searchKey);
+
                         $this->em->persist($entities[$searchKey]);
+                        ++$rowsInserted;
+                    } else {
+                        ++$rowsUpdated;
                     }
                     $entities[$searchKey]->incriminateClicks($clicks);
 
                     // Make it stick for every 500 rows.
-                    if (0 === $rowsInserted % 5000) {
+                    if (0 === count($entities) % 500) {
                         $this->em->flush();
                         $this->em->getConnection()->commit();
                         $this->em->clear();
@@ -115,13 +110,11 @@ class ParseUserClickedService
                     }
                 }
             }
-
-            // Make it stick.
-            $this->em->flush();
-            $this->em->getConnection()->commit();
         }
 
-        $reader->close();
+        // Make it stick.
+        $this->em->flush();
+        $this->em->getConnection()->commit();
     }
 
     /**
@@ -130,28 +123,27 @@ class ParseUserClickedService
      * @param string $filename
      *   The file name to store the serialized data object in public folder
      *
-     * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
     public function writeFile(string $filename = 'autodata.txt'): void
     {
         // This is done with raw SQL statements as the query build will not accept the sub-query.
-        $subQuery = '(SELECT pid, search, sum(clicks) AS clicks FROM user_clicked_feed u GROUP BY search, pid)';
-        $query = 'SELECT * FROM '.$subQuery.' WHERE clicks > 2 ORDER BY search ASC, clicks DESC';
+        $subQuery = '(SELECT pid, search, sum(clicks) AS clicks FROM user_clicked_feed u GROUP BY search, pid) as ucf';
+        $query = 'SELECT ucf.* FROM '.$subQuery.' WHERE clicks > 2 ORDER BY search ASC, clicks DESC';
         $conn = $this->em->getConnection();
         $stmt = $conn->prepare($query);
-        $stmt->execute();
+        $stmt->executeStatement();
+        $iterable = $stmt->executeQuery()->iterateAssociative();
 
-        $iterable = $stmt->iterateAssociative();
         $data = [];
         foreach ($iterable as $row) {
             // Force encoding to UTF8 for the search string.
             $row['search'] = Encoding::toUTF8($row['search']);
 
-            // As the data is ordered by click for each searches we can limit it to the 5 object pr. search as we known
+            // As the data is ordered by click for each search's we can limit it to the 5 object pr. search as we knew
             // that the data is sorted correctly.
             if (isset($data[$row['search']]) && count($data[$row['search']]) >= 5) {
-                // If 5 objects (PIDs) for an given search have been found skip the rest.
+                // If 5 objects (PIDs) for a given search have been found skip the rest.
                 continue;
             }
 

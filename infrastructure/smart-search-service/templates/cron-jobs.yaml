@@ -24,6 +24,7 @@ spec:
               args:
                 - "bin/console"
                 - "app:parse:feed"
+                - "--reset"
                 - "--no-debug"
                 - "--quiet"
               env:
@@ -69,6 +70,7 @@ spec:
               args:
                 - "bin/console"
                 - "app:parse:user"
+                - "--reset"
                 - "--no-debug"
                 - "--quiet"
               env:

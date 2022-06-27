@@ -2,8 +2,10 @@
 
 namespace App\Service;
 
-use GuzzleHttp\Client;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpClient\Response\StreamWrapper;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Class FileDownloader.
@@ -11,7 +13,7 @@ use Symfony\Component\Filesystem\Filesystem;
 class FileDownloaderService
 {
     private string $base;
-    private Client $client;
+    private HttpClientInterface $client;
     private static array $filenames = [];
     private Filesystem $filesystem;
 
@@ -19,11 +21,14 @@ class FileDownloaderService
      * FileDownloader constructor.
      *
      * @param string $bindSourceBase
+     *   The base source URL
+     * @param httpClientInterface $client
+     *   The HTTP client used to download the file
      */
-    public function __construct(string $bindSourceBase)
+    public function __construct(string $bindSourceBase, HttpClientInterface $client)
     {
         $this->base = $bindSourceBase;
-        $this->client = new Client(['base_uri' => $this->base, 'stream' => true, 'debug' => false]);
+        $this->client = $client;
         $this->filesystem = new Filesystem();
     }
 
@@ -34,32 +39,28 @@ class FileDownloaderService
      *
      * @param string $uri
      *   The URI of the file to download
+     * @param string $filename
+     *   The file to save the downloaded data too
      *
-     * @return string
-     *   The file the data was downloaded to
-     *
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws TransportExceptionInterface
      */
-    public function download(string $uri): string
+    public function download(string $uri, string $filename): void
     {
-        $filename = $this->filesystem->tempnam('/tmp', 'downloaded_');
-
         $dest = fopen($filename, 'w');
-        $source = $this->client->request('GET', $uri);
-        $input = $source->getBody()->detach();
+        $response = $this->client->request(
+            'GET',
+            $this->base.$uri,
+            ['timeout' => 5]
+        );
 
-        if (!is_null($input)) {
-            stream_copy_to_stream($input, $dest);
-        } else {
-            throw new \Exception('Input stream do not exists');
+        if (200 !== $response->getStatusCode()) {
+            throw new \Exception('Ressource return non 200 code', $response->getStatusCode());
         }
 
-        $source->getBody()->close();
+        stream_copy_to_stream(StreamWrapper::createResource($response, $this->client), $dest);
         fclose($dest);
 
         $this->saveFileName($uri, $filename);
-
-        return $filename;
     }
 
     /**
@@ -69,7 +70,7 @@ class FileDownloaderService
      *   The URI that was used to create the temporary file
      *
      * @return bool
-     *   true if the clean up is successful else false
+     *   true if the cleanup is successful else false
      */
     public function cleanUp(string $uri): bool
     {
@@ -84,7 +85,7 @@ class FileDownloaderService
     }
 
     /**
-     * Save filename indexed by URI (book keeping helper).
+     * Save filename indexed by URI (bookkeeping helper).
      *
      * @param string $uri
      *   The URI that was used to create the temporary file
@@ -97,7 +98,7 @@ class FileDownloaderService
     }
 
     /**
-     * Get filename based on uri (book keeping helper).
+     * Get filename based on uri (bookkeeping helper).
      *
      * @param string $uri
      *   The URI that was used to create the temporary file

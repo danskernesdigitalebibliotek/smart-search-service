@@ -39,7 +39,7 @@ class IndexController extends AbstractController
                 $links[] = [
                     'name' => $fileNameWithExtension,
                     'url' => $relativePath,
-                    'date' => $date = \DateTime::createFromFormat('U', (string) $file->getCTime()),
+                    'date' => \DateTime::createFromFormat('U', (string) $file->getCTime()),
                     'size' => $this->formatByteSize($file->getSize()),
                 ];
             }
