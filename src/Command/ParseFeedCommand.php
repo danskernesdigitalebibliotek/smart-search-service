@@ -118,6 +118,7 @@ class ParseFeedCommand extends Command
         }
 
         $progressBar->finish();
+        $output->writeln('');
 
         $this->fileDownloader->cleanUp($this->source);
 

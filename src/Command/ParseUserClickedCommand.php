@@ -118,6 +118,7 @@ class ParseUserClickedCommand extends Command
             return Command::FAILURE;
         }
         $progressBar->finish();
+        $output->writeln('');
 
         $this->fileDownloader->cleanUp($this->source);
 

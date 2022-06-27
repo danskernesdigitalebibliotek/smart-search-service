@@ -67,7 +67,7 @@ class ParseUserClickedService
             }
             $page = $line[1];
 
-            // Yield progress).
+            // Yield progress.
             if (0 == $rowsCount % 500) {
                 yield ['processed' => $rowsCount, 'inserted' => $rowsInserted, 'updated' => $rowsUpdated];
             }
@@ -128,13 +128,12 @@ class ParseUserClickedService
     public function writeFile(string $filename = 'autodata.txt'): void
     {
         // This is done with raw SQL statements as the query build will not accept the sub-query.
-        $subQuery = '(SELECT pid, search, sum(clicks) AS clicks FROM user_clicked_feed u GROUP BY search, pid)';
-        $query = 'SELECT * FROM '.$subQuery.' WHERE clicks > 2 ORDER BY search ASC, clicks DESC';
+        $subQuery = '(SELECT pid, search, sum(clicks) AS clicks FROM user_clicked_feed u GROUP BY search, pid) as ucf';
+        $query = 'SELECT ucf.* FROM '.$subQuery.' WHERE clicks > 2 ORDER BY search ASC, clicks DESC';
         $conn = $this->em->getConnection();
         $stmt = $conn->prepare($query);
         $stmt->executeStatement();
-
-        $iterable = $stmt->iterateAssociative();
+        $iterable = $stmt->executeQuery()->iterateAssociative();
 
         $data = [];
         foreach ($iterable as $row) {
