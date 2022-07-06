@@ -10,10 +10,6 @@
 
 public/*.csv
 public/*.txt
-###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-/phpunit.xml
-###< symfony/phpunit-bridge ###
 node_modules
 
 ###> friendsofphp/php-cs-fixer ###
@@ -25,3 +21,8 @@ node_modules
 /.phpcs-cache
 /phpcs.xml
 ###< squizlabs/php_codesniffer ###
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
