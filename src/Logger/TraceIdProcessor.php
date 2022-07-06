@@ -12,7 +12,7 @@ namespace App\Logger;
  */
 class TraceIdProcessor
 {
-    private $traceId;
+    private string $traceId;
 
     /**
      * TraceIdProcessor constructor.

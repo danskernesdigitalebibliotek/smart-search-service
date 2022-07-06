@@ -17,7 +17,7 @@ class TraceIdEnvVarProcessor implements EnvVarProcessorInterface
     /**
      * {@inheritdoc}
      */
-    public function getEnv($prefix, $name, $getEnv)
+    public function getEnv($prefix, $name, $getEnv): mixed
     {
         try {
             $this::$id = $getEnv($name);
@@ -35,7 +35,7 @@ class TraceIdEnvVarProcessor implements EnvVarProcessorInterface
     /**
      * {@inheritdoc}
      */
-    public static function getProvidedTypes()
+    public static function getProvidedTypes(): array
     {
         return [
             'traceId' => 'string',
