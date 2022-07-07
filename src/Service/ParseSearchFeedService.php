@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\SearchFeed;
 use App\Repository\SearchFeedRepository;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use ForceUTF8\Encoding;
 
@@ -37,8 +38,6 @@ class ParseSearchFeedService
      *   If provided the file will be used as input else file will be downloaded
      *
      *   Yield for every 500 rows
-     *
-     * @throws \Doctrine\DBAL\Exception
      */
     public function parse(string $filename): \Generator
     {
@@ -136,7 +135,7 @@ class ParseSearchFeedService
     /**
      * Reset the database table (truncate it).
      *
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function reset(): void
     {

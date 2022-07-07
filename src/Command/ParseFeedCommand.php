@@ -6,6 +6,7 @@ use App\Service\FileDownloaderService;
 use App\Service\ParseSearchFeedService;
 use Doctrine\DBAL\Exception;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,9 +15,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-/**
- * Class ParseFeedCommand.
- */
+#[AsCommand(
+    name: 'app:parse:feed',
+)]
 class ParseFeedCommand extends Command
 {
     protected static $defaultName = 'app:parse:feed';

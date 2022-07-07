@@ -5,32 +5,22 @@ namespace App\Entity;
 use App\Repository\UserClickedFeedRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=UserClickedFeedRepository::class)
- * @ORM\Table(indexes={@ORM\Index(name="search_pid_idx", columns={"search","pid"})})
- */
+#[ORM\Entity(repositoryClass: UserClickedFeedRepository::class)]
+#[ORM\Table(indexes: [new ORM\Index(columns: ['search', 'pid'], name: 'search_pid_idx')])]
 class UserClickedFeed
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private int $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private readonly int $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: 'string', length: 255)]
     private string $search;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: 'string', length: 255)]
     private string $pid;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private int $clicks = 0;
 
     public function getId(): ?int

@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\UserClickedFeed;
 use App\Repository\UserClickedFeedRepository;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use ForceUTF8\Encoding;
 
@@ -38,7 +39,7 @@ class ParseUserClickedService
      *
      *   Yield for every 500 rows
      *
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function parse(string $filename): \Generator
     {
@@ -117,7 +118,7 @@ class ParseUserClickedService
      * @param string $filename
      *   The file name to store the serialized data object in public folder
      *
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function writeFile(string $filename = 'autodata.txt'): void
     {
@@ -152,7 +153,7 @@ class ParseUserClickedService
     /**
      * Reset the database table (truncate it).
      *
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function reset(): void
     {
