@@ -6,7 +6,7 @@ use App\Repository\UserClickedFeedRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserClickedFeedRepository::class)]
-#[ORM\Table(indexes: [new ORM\Index(columns: ['search', 'pid'], name: 'search_pid_idx')])]
+#[ORM\Index(columns: ['search', 'pid'], name: 'search_pid_idx')]
 class UserClickedFeed
 {
     #[ORM\Id]
