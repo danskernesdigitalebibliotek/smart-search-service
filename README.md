@@ -72,8 +72,8 @@ the coding standard for the project.
 * Markdown files (markdownlint standard rules)
 
     ```shell
-    docker run -v ${PWD}:/app itkdev/yarn:latest install
-    docker run -v ${PWD}:/app itkdev/yarn:latest check-coding-standards
+    docker run -it --rm -v "$PWD":/app -w /app node:16 yarn install
+    docker run -it --rm -v "$PWD":/app -w /app node:16 yarn check-coding-standards
     ```
 
 ### Apply Coding Standards
@@ -89,8 +89,8 @@ To attempt to automatically fix coding style
 * Markdown files (markdownlint standard rules)
 
     ```shell
-    docker run -v ${PWD}:/app itkdev/yarn:14 install
-    docker run -v ${PWD}:/app itkdev/yarn:14 coding-standards-apply
+    docker run -it --rm -v "$PWD":/app -w /app node:16 yarn install
+    docker run -it --rm -v "$PWD":/app -w /app node:16 yarn apply-coding-standards
     ```
 
 ## CI

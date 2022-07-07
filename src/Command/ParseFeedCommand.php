@@ -20,7 +20,6 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 )]
 class ParseFeedCommand extends Command
 {
-    protected static $defaultName = 'app:parse:feed';
     private readonly Filesystem $filesystem;
 
     /**
