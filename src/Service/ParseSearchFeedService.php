@@ -12,25 +12,20 @@ use ForceUTF8\Encoding;
  */
 class ParseSearchFeedService
 {
-    private string $destinationDirectory;
-    private SearchFeedRepository $searchFeedRepos;
-    private EntityManagerInterface $em;
-    private CsvReaderService $CsvReader;
-
     /**
      * ParseSearchFeedService constructor.
      *
-     * @param string $bindDestinationDirectory
-     * @param EntityManagerInterface $entityManager
-     * @param SearchFeedRepository $searchFeedRepository
-     * @param CsvReaderService $CsvReaderService
+     * @param string $destinationDirectory
+     * @param EntityManagerInterface $em
+     * @param SearchFeedRepository $searchFeedRepos
+     * @param CsvReaderService $CsvReader
      */
-    public function __construct(string $bindDestinationDirectory, EntityManagerInterface $entityManager, SearchFeedRepository $searchFeedRepository, CsvReaderService $CsvReaderService)
-    {
-        $this->destinationDirectory = $bindDestinationDirectory;
-        $this->em = $entityManager;
-        $this->searchFeedRepos = $searchFeedRepository;
-        $this->CsvReader = $CsvReaderService;
+    public function __construct(
+        private readonly string $destinationDirectory,
+        private readonly EntityManagerInterface $em,
+        private readonly SearchFeedRepository $searchFeedRepos,
+        private readonly CsvReaderService $CsvReader
+    ) {
     }
 
     /**
@@ -41,7 +36,6 @@ class ParseSearchFeedService
      * @param string $filename
      *   If provided the file will be used as input else file will be downloaded
      *
-     * @return \Generator
      *   Yield for every 500 rows
      *
      * @throws \Doctrine\DBAL\Exception
@@ -68,7 +62,7 @@ class ParseSearchFeedService
             }
 
             if ($this->isFromPeriod($searchYear, $searchWeek)) {
-                $searchKey = htmlspecialchars_decode($line[2]);
+                $searchKey = htmlspecialchars_decode((string) $line[2]);
                 $search_count = (int) $line[3];
 
                 // We exclude complex search strings.
@@ -158,8 +152,6 @@ class ParseSearchFeedService
      *   Week number
      * @param int $period
      *   Weeks from now that the year and week should be with in
-     *
-     * @return bool
      */
     private function isFromPeriod(int $year, int $week, int $period = 52): bool
     {
@@ -186,12 +178,11 @@ class ParseSearchFeedService
      * @param string $key
      *   The search key
      *
-     * @return bool
      *   The result of the validation
      */
     private function isValid(string $key): bool
     {
-        if (false !== strpos($key, '=') || false !== strpos($key, '(') || false !== strpos($key, '*')) {
+        if (str_contains($key, '=') || str_contains($key, '(') || str_contains($key, '*')) {
             return false;
         }
 

@@ -19,29 +19,23 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  */
 class ParseFeedCommand extends Command
 {
-    private string $source;
-    private FileDownloaderService $fileDownloader;
-    private ParseSearchFeedService $parseSearchFeedService;
-    private LoggerInterface $logger;
-
     protected static $defaultName = 'app:parse:feed';
-    private Filesystem $filesystem;
+    private readonly Filesystem $filesystem;
 
     /**
      * ParseFeedCommand constructor.
      *
-     * @param string $bindSourceSearchFeed
+     * @param string $sourceSearchFeed
      * @param FileDownloaderService $fileDownloader
      * @param ParseSearchFeedService $parseSearchFeedService
-     * @param LoggerInterface $informationLogger
+     * @param LoggerInterface $logger
      */
-    public function __construct(string $bindSourceSearchFeed, FileDownloaderService $fileDownloader, ParseSearchFeedService $parseSearchFeedService, LoggerInterface $informationLogger)
-    {
-        $this->source = $bindSourceSearchFeed;
-        $this->fileDownloader = $fileDownloader;
-        $this->parseSearchFeedService = $parseSearchFeedService;
-        $this->logger = $informationLogger;
-
+    public function __construct(
+        private readonly string $sourceSearchFeed,
+        private readonly FileDownloaderService $fileDownloader,
+        private readonly ParseSearchFeedService $parseSearchFeedService,
+        private readonly LoggerInterface $logger
+    ) {
         $this->filesystem = new Filesystem();
 
         parent::__construct();
@@ -68,14 +62,14 @@ class ParseFeedCommand extends Command
 
         $filename = $input->getOption('filename');
         if (is_null($filename)) {
-            $this->logger->info('Starting download of file ('.$this->source.')');
+            $this->logger->info('Starting download of file ('.$this->sourceSearchFeed.')');
             $progressBar->setMessage('Starting the download process (might take some time)...');
             $progressBar->display();
             try {
                 $filename = $this->filesystem->tempnam('/tmp', 'downloaded_');
-                $this->fileDownloader->download($this->source, $filename);
+                $this->fileDownloader->download($this->sourceSearchFeed, $filename);
             } catch (TransportExceptionInterface $e) {
-                $this->logger->info('Download failed of file ('.$this->source.') : '.$e->getMessage());
+                $this->logger->info('Download failed of file ('.$this->sourceSearchFeed.') : '.$e->getMessage());
 
                 return Command::FAILURE;
             }
@@ -120,7 +114,7 @@ class ParseFeedCommand extends Command
         $progressBar->finish();
         $output->writeln('');
 
-        $this->fileDownloader->cleanUp($this->source);
+        $this->fileDownloader->cleanUp($this->sourceSearchFeed);
 
         $this->logger->info('Completed');
 

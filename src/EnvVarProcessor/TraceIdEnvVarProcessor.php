@@ -21,7 +21,7 @@ class TraceIdEnvVarProcessor implements EnvVarProcessorInterface
     {
         try {
             $this::$id = $getEnv($name);
-        } catch (EnvNotFoundException $exception) {
+        } catch (EnvNotFoundException) {
             // Do not do anything here as the id will fallback to be generated.
         }
 
@@ -46,8 +46,6 @@ class TraceIdEnvVarProcessor implements EnvVarProcessorInterface
      * Generate new unique id.
      *
      * @throws \Exception
-     *
-     * @return void
      */
     private function generate(): void
     {

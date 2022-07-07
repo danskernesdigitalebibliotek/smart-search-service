@@ -11,14 +11,6 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-        bind:
-            $bindProjectDir: '%kernel.project_dir%'
-            $bindSourceBase: '%env(SOURCE_BASE)%'
-            $bindSourceSearchFeed: '%env(SOURCE_SEARCH_FEED)%'
-            $bindAutoDataSource: '%env(SOURCE_AUTO_DATA)%'
-            $bindDestinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
-            $bindTraceId: '%env(traceId:HTTP_X_REQUEST_ID)%'
-
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -34,6 +26,33 @@ services:
     monolog.formatter.json:
         class: Monolog\Formatter\JsonFormatter
 
+    App\Command\ParseFeedCommand:
+        arguments:
+            $sourceSearchFeed: '%env(SOURCE_SEARCH_FEED)%'
+
+    App\Command\ParseUserClickedCommand:
+        arguments:
+            $autoDataSource: '%env(SOURCE_AUTO_DATA)%'
+
+    App\Controller\IndexController:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $destinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
+
     App\Logger\TraceIdProcessor:
         tags:
             - { name: monolog.processor }
+        arguments:
+            $traceId: '%env(traceId:HTTP_X_REQUEST_ID)%'
+
+    App\Service\FileDownloaderService:
+        arguments:
+            $sourceBase: '%env(SOURCE_BASE)%'
+
+    App\Service\ParseSearchFeedService:
+        arguments:
+            $destinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
+
+    App\Service\ParseUserClickedService:
+        arguments:
+            $destinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
