@@ -266,4 +266,4 @@ jobs:
           version: v3.1.2
 
       - name: Lint helm
-        run: helm lint infrastructure/cover-service-upload --set hpa.enabled=true --set ingress.enableTLS=true --set ingress.mail=test@itkdev.dk --set ingress.domain=upload-cover.dandigbib.org
+        run: helm lint infrastructure/smart-search-service
