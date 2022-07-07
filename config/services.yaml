@@ -23,9 +23,6 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    monolog.formatter.json:
-        class: Monolog\Formatter\JsonFormatter
-
     App\Command\ParseFeedCommand:
         arguments:
             $sourceSearchFeed: '%env(SOURCE_SEARCH_FEED)%'
@@ -40,10 +37,13 @@ services:
             $destinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
 
     App\Logger\TraceIdProcessor:
-        tags:
-            - { name: monolog.processor }
         arguments:
             $traceId: '%env(traceId:HTTP_X_REQUEST_ID)%'
+        tags:
+            - { name: monolog.processor }
+
+    monolog.formatter.json:
+        class: Monolog\Formatter\JsonFormatter
 
     App\Service\FileDownloaderService:
         arguments:
