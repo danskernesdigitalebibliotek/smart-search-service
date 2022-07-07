@@ -37,7 +37,7 @@ jobs:
           APP_ENV=prod composer install --no-dev -o
 
   unit-tests:
-    name: Unit tests (${{ matrix.php }})
+    name: Test suite (${{ matrix.php }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -66,8 +66,8 @@ jobs:
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
 
-      - name: Unit tests
-        run: ./vendor/bin/phpunit --coverage-clover=coverage/unit.xml
+      - name: Run PHPUnit
+        run: ./vendor/bin/simple-phpunit --coverage-clover=coverage/unit.xml
 
       - name: Upload coverage to Codecov test
         uses: codecov/codecov-action@v1
