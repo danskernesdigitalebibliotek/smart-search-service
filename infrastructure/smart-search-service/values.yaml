@@ -26,7 +26,10 @@ app:
   destination:
     folder: "public/data"
   db:
-    url: "sqlite:///%kernel.project_dir%/var/app.db"
+    server: "k8s-ddf-prod.mariadb.database.azure.com"
+    port: "3306"
+    database: "smart-search"
+    version: "mariadb-10.6.7"
   replicas: 1
   cors_allow_origin: "*"
   trusted_proxies: "127.0.0.1,10.240.0.0/16"
@@ -43,4 +46,4 @@ app:
 nginx:
   exporter:
     image:
-      version: 0.6.0
+      version: 2.2.0
