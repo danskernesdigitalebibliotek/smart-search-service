@@ -17,11 +17,11 @@ class TraceIdEnvVarProcessor implements EnvVarProcessorInterface
     /**
      * {@inheritdoc}
      */
-    public function getEnv($prefix, $name, $getEnv)
+    public function getEnv($prefix, $name, $getEnv): mixed
     {
         try {
             $this::$id = $getEnv($name);
-        } catch (EnvNotFoundException $exception) {
+        } catch (EnvNotFoundException) {
             // Do not do anything here as the id will fallback to be generated.
         }
 
@@ -35,7 +35,7 @@ class TraceIdEnvVarProcessor implements EnvVarProcessorInterface
     /**
      * {@inheritdoc}
      */
-    public static function getProvidedTypes()
+    public static function getProvidedTypes(): array
     {
         return [
             'traceId' => 'string',
@@ -46,8 +46,6 @@ class TraceIdEnvVarProcessor implements EnvVarProcessorInterface
      * Generate new unique id.
      *
      * @throws \Exception
-     *
-     * @return void
      */
     private function generate(): void
     {

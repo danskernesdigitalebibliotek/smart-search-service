@@ -6,6 +6,7 @@ use App\Service\FileDownloaderService;
 use App\Service\ParseUserClickedService;
 use Doctrine\DBAL\Exception;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,34 +15,27 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-/**
- * Class ParseUserClickedCommand.
- */
+#[AsCommand(
+    name: 'app:parse:user',
+)]
 class ParseUserClickedCommand extends Command
 {
-    private string $source;
-    private FileDownloaderService $fileDownloader;
-    private ParseUserClickedService $parseUserClickedService;
-    private LoggerInterface $logger;
-
-    protected static $defaultName = 'app:parse:user';
-    private Filesystem $filesystem;
+    private readonly Filesystem $filesystem;
 
     /**
      * ParseUserClickedCommand constructor.
      *
-     * @param string $bindAutoDataSource
+     * @param string $autoDataSource
      * @param FileDownloaderService $fileDownloader
      * @param ParseUserClickedService $parseUserClickedService
-     * @param LoggerInterface $informationLogger
+     * @param LoggerInterface $logger
      */
-    public function __construct(string $bindAutoDataSource, FileDownloaderService $fileDownloader, ParseUserClickedService $parseUserClickedService, LoggerInterface $informationLogger)
-    {
-        $this->source = $bindAutoDataSource;
-        $this->fileDownloader = $fileDownloader;
-        $this->parseUserClickedService = $parseUserClickedService;
-        $this->logger = $informationLogger;
-
+    public function __construct(
+        private readonly string $autoDataSource,
+        private readonly FileDownloaderService $fileDownloader,
+        private readonly ParseUserClickedService $parseUserClickedService,
+        private readonly LoggerInterface $logger
+    ) {
         $this->filesystem = new Filesystem();
 
         parent::__construct();
@@ -68,15 +62,15 @@ class ParseUserClickedCommand extends Command
 
         $filename = $input->getOption('filename');
         if (is_null($filename)) {
-            $this->logger->info('Starting download of file ('.$this->source.')');
+            $this->logger->info('Starting download of file ('.$this->autoDataSource.')');
             $progressBar->setMessage('Starting the download process (might take some time)...');
             $progressBar->display();
 
             try {
                 $filename = $this->filesystem->tempnam('/tmp', 'downloaded_');
-                $this->fileDownloader->download($this->source, $filename);
+                $this->fileDownloader->download($this->autoDataSource, $filename);
             } catch (TransportExceptionInterface $e) {
-                $this->logger->info('Download failed of file ('.$this->source.') : '.$e->getMessage());
+                $this->logger->info('Download failed of file ('.$this->autoDataSource.') : '.$e->getMessage());
 
                 return Command::FAILURE;
             }
@@ -120,7 +114,7 @@ class ParseUserClickedCommand extends Command
         $progressBar->finish();
         $output->writeln('');
 
-        $this->fileDownloader->cleanUp($this->source);
+        $this->fileDownloader->cleanUp($this->autoDataSource);
 
         $this->logger->info('Completed');
 

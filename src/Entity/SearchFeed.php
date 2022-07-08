@@ -7,42 +7,29 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Class SearchFeed.
- *
- * @ORM\Entity(repositoryClass=SearchFeedRepository::class)
- * @ORM\Table(indexes={@ORM\Index(name="search_idx", columns={"search"})})
  */
+#[ORM\Entity(repositoryClass: SearchFeedRepository::class)]
+#[ORM\Index(columns: ['search'], name: 'search_idx')]
 class SearchFeed
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private int $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private readonly int $id;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private int $year;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private int $week;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: 'string', length: 255)]
     private string $search;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private int $longPeriod = 0;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private int $shortPeriod = 0;
 
     public function getId(): ?int

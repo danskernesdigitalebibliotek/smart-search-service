@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\UserClickedFeed;
 use App\Repository\UserClickedFeedRepository;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use ForceUTF8\Encoding;
 
@@ -12,25 +13,20 @@ use ForceUTF8\Encoding;
  */
 class ParseUserClickedService
 {
-    private string $destinationDirectory;
-    private EntityManagerInterface $em;
-    private UserClickedFeedRepository $userClickedRepos;
-    private CsvReaderService $CsvReader;
-
     /**
      * ParseUserClickedService constructor.
      *
-     * @param string $bindDestinationDirectory
-     * @param EntityManagerInterface $entityManager
-     * @param UserClickedFeedRepository $UserClickedFeedRepository
-     * @param CsvReaderService $CsvReaderService
+     * @param string $destinationDirectory
+     * @param EntityManagerInterface $em
+     * @param UserClickedFeedRepository $userClickedRepos
+     * @param CsvReaderService $CsvReader
      */
-    public function __construct(string $bindDestinationDirectory, EntityManagerInterface $entityManager, UserClickedFeedRepository $UserClickedFeedRepository, CsvReaderService $CsvReaderService)
-    {
-        $this->destinationDirectory = $bindDestinationDirectory;
-        $this->em = $entityManager;
-        $this->userClickedRepos = $UserClickedFeedRepository;
-        $this->CsvReader = $CsvReaderService;
+    public function __construct(
+        private readonly string $destinationDirectory,
+        private readonly EntityManagerInterface $em,
+        private readonly UserClickedFeedRepository $userClickedRepos,
+        private readonly CsvReaderService $CsvReader
+    ) {
     }
 
     /**
@@ -41,10 +37,9 @@ class ParseUserClickedService
      * @param string $filename
      *   If provided the file will be used as input else file will be downloaded
      *
-     * @return \Generator
      *   Yield for every 500 rows
      *
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function parse(string $filename): \Generator
     {
@@ -77,7 +72,7 @@ class ParseUserClickedService
                 // Find the linked data-well post id (PID).
                 $pid = $this->getPidFromPage($page);
                 if (!empty($pid)) {
-                    $searchKey = htmlspecialchars_decode($line[0]);
+                    $searchKey = htmlspecialchars_decode((string) $line[0]);
                     $clicks = (int) $line[2];
 
                     $entities[$searchKey] = array_key_exists($searchKey, $entities) ? $entities[$searchKey] : $this->userClickedRepos->findOneBy([
@@ -123,7 +118,7 @@ class ParseUserClickedService
      * @param string $filename
      *   The file name to store the serialized data object in public folder
      *
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function writeFile(string $filename = 'autodata.txt'): void
     {
@@ -158,7 +153,7 @@ class ParseUserClickedService
     /**
      * Reset the database table (truncate it).
      *
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function reset(): void
     {
@@ -173,12 +168,11 @@ class ParseUserClickedService
      * @param string $page
      *   Page part of the data from the source file
      *
-     * @return string
      *   The pid if found else the empty string
      */
     private function getPidFromPage(string $page): string
     {
-        if (!(false !== strpos($page, 'ereolen'))) {
+        if (!(str_contains($page, 'ereolen'))) {
             preg_match("%ting\.(collection|object)\.(.+)%", $page, $matches);
             if ($matches && isset($matches[2])) {
                 return $matches[2];

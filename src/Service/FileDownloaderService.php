@@ -12,23 +12,21 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class FileDownloaderService
 {
-    private string $base;
-    private HttpClientInterface $client;
     private static array $filenames = [];
-    private Filesystem $filesystem;
+    private readonly Filesystem $filesystem;
 
     /**
      * FileDownloader constructor.
      *
-     * @param string $bindSourceBase
+     * @param string $sourceBase
      *   The base source URL
      * @param httpClientInterface $client
      *   The HTTP client used to download the file
      */
-    public function __construct(string $bindSourceBase, HttpClientInterface $client)
-    {
-        $this->base = $bindSourceBase;
-        $this->client = $client;
+    public function __construct(
+        private readonly string $sourceBase,
+        private readonly HttpClientInterface $client
+    ) {
         $this->filesystem = new Filesystem();
     }
 
@@ -49,7 +47,7 @@ class FileDownloaderService
         $dest = fopen($filename, 'w');
         $response = $this->client->request(
             'GET',
-            $this->base.$uri,
+            $this->sourceBase.$uri,
             ['timeout' => 5]
         );
 
@@ -69,7 +67,6 @@ class FileDownloaderService
      * @param string $uri
      *   The URI that was used to create the temporary file
      *
-     * @return bool
      *   true if the cleanup is successful else false
      */
     public function cleanUp(string $uri): bool
@@ -77,7 +74,7 @@ class FileDownloaderService
         try {
             $filename = $this->getFileName($uri);
             $this->filesystem->remove($filename);
-        } catch (\Exception $exception) {
+        } catch (\Exception) {
             return false;
         }
 
@@ -103,7 +100,6 @@ class FileDownloaderService
      * @param string $uri
      *   The URI that was used to create the temporary file
      *
-     * @return string
      *   The temporary file
      *
      * @throws \Exception
