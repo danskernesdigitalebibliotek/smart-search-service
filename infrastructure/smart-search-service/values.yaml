@@ -46,4 +46,4 @@ app:
 nginx:
   exporter:
     image:
-      version: 2.2.0
+      version: 0.10.0
