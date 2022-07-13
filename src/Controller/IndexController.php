@@ -23,7 +23,7 @@ class IndexController extends AbstractController
     public function index(Request $request): Response
     {
         $finder = new Finder();
-        $finder->files()->in($this->destinationDirectory)->name('*.txt')->name('*.csv');
+        $finder->files()->in($this->destinationDirectory)->name('*.txt')->name('*.csv')->sortByName();
         $links = [];
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
