@@ -4,42 +4,39 @@ namespace App\Command;
 
 use App\Service\FileDownloaderService;
 use App\Service\ParseSearchFeedService;
-use Box\Spout\Common\Exception\SpoutException;
 use Doctrine\DBAL\Exception;
-use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-/**
- * Class ParseFeedCommand.
- */
+#[AsCommand(
+    name: 'app:parse:feed',
+)]
 class ParseFeedCommand extends Command
 {
-    private string $source;
-    private FileDownloaderService $fileDownloader;
-    private ParseSearchFeedService $parseSearchFeedService;
-    private LoggerInterface $logger;
-
-    protected static $defaultName = 'app:parse:feed';
+    private readonly Filesystem $filesystem;
 
     /**
      * ParseFeedCommand constructor.
      *
-     * @param string $bindSourceSearchFeed
+     * @param string $sourceSearchFeed
      * @param FileDownloaderService $fileDownloader
      * @param ParseSearchFeedService $parseSearchFeedService
-     * @param LoggerInterface $informationLogger
+     * @param LoggerInterface $logger
      */
-    public function __construct(string $bindSourceSearchFeed, FileDownloaderService $fileDownloader, ParseSearchFeedService $parseSearchFeedService, LoggerInterface $informationLogger)
-    {
-        $this->source = $bindSourceSearchFeed;
-        $this->fileDownloader = $fileDownloader;
-        $this->parseSearchFeedService = $parseSearchFeedService;
-        $this->logger = $informationLogger;
+    public function __construct(
+        private readonly string $sourceSearchFeed,
+        private readonly FileDownloaderService $fileDownloader,
+        private readonly ParseSearchFeedService $parseSearchFeedService,
+        private readonly LoggerInterface $logger
+    ) {
+        $this->filesystem = new Filesystem();
 
         parent::__construct();
     }
@@ -65,12 +62,14 @@ class ParseFeedCommand extends Command
 
         $filename = $input->getOption('filename');
         if (is_null($filename)) {
-            $this->logger->info('Starting download of file ('.$this->source.')');
+            $this->logger->info('Starting download of file ('.$this->sourceSearchFeed.')');
             $progressBar->setMessage('Starting the download process (might take some time)...');
+            $progressBar->display();
             try {
-                $filename = $this->fileDownloader->download($this->source);
-            } catch (GuzzleException $e) {
-                $this->logger->info('Download failed of file ('.$this->source.') : '.$e->getMessage());
+                $filename = $this->filesystem->tempnam('/tmp', 'downloaded_');
+                $this->fileDownloader->download($this->sourceSearchFeed, $filename);
+            } catch (TransportExceptionInterface $e) {
+                $this->logger->info('Download failed of file ('.$this->sourceSearchFeed.') : '.$e->getMessage());
 
                 return Command::FAILURE;
             }
@@ -80,6 +79,7 @@ class ParseFeedCommand extends Command
         if ($reset) {
             $this->logger->info('Resetting database');
             $progressBar->setMessage('Resetting database...');
+            $progressBar->display();
             try {
                 $this->parseSearchFeedService->reset();
             } catch (Exception $e) {
@@ -91,10 +91,10 @@ class ParseFeedCommand extends Command
 
         try {
             foreach ($this->parseSearchFeedService->parse($filename) as $counts) {
-                $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted']);
+                $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted'].' updated: '.$counts['updated']);
                 $progressBar->advance();
             }
-        } catch (SpoutException $e) {
+        } catch (\Exception $e) {
             $this->logger->error('Error reading CSV file : '.$e->getMessage());
 
             return Command::FAILURE;
@@ -102,17 +102,19 @@ class ParseFeedCommand extends Command
 
         $this->logger->info('Writing output file');
         $progressBar->setMessage('Writing output file...');
+        $progressBar->display();
         try {
             $this->parseSearchFeedService->writeFile();
-        } catch (SpoutException $e) {
+        } catch (\Exception $e) {
             $this->logger->error('Error writing CSV file : '.$e->getMessage());
 
             return Command::FAILURE;
         }
 
         $progressBar->finish();
+        $output->writeln('');
 
-        $this->fileDownloader->cleanUp($this->source);
+        $this->fileDownloader->cleanUp($this->sourceSearchFeed);
 
         $this->logger->info('Completed');
 

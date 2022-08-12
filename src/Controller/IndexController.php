@@ -10,26 +10,21 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class IndexController extends AbstractController
 {
-    private string $projectDir;
-    private string $destinationDirectory;
-
-    public function __construct(string $bindProjectDir, string $bindDestinationDirectory)
-    {
-        $this->projectDir = $bindProjectDir;
-        $this->destinationDirectory = $bindDestinationDirectory;
+    public function __construct(
+        private readonly string $projectDir,
+        private readonly string $destinationDirectory
+    ) {
     }
 
     /**
      * Default page listing the generated files.
-     *
-     * @Route("/", name="index")
      */
+    #[Route(path: '/', name: 'index')]
     public function index(Request $request): Response
     {
         $finder = new Finder();
-        $finder->files()->in($this->destinationDirectory)->name('*.txt')->name('*.csv');
+        $finder->files()->in($this->destinationDirectory)->name('*.txt')->name('*.csv')->sortByName();
         $links = [];
-
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
                 $absoluteFilePath = $file->getRealPath();
@@ -39,7 +34,7 @@ class IndexController extends AbstractController
                 $links[] = [
                     'name' => $fileNameWithExtension,
                     'url' => $relativePath,
-                    'date' => $date = \DateTime::createFromFormat('U', (string) $file->getCTime()),
+                    'date' => \DateTime::createFromFormat('U', (string) $file->getCTime()),
                     'size' => $this->formatByteSize($file->getSize()),
                 ];
             }
@@ -56,15 +51,14 @@ class IndexController extends AbstractController
      * @param int $bytes
      *   The size in bytes
      *
-     * @return string
      *   Formatted size string
      */
     private function formatByteSize(int $bytes): string
     {
-        if ($bytes >= 1073741824) {
-            $bytes = number_format($bytes / 1073741824, 2).' GB';
-        } elseif ($bytes >= 1048576) {
-            $bytes = number_format($bytes / 1048576, 2).' MB';
+        if ($bytes >= 1_073_741_824) {
+            $bytes = number_format($bytes / 1_073_741_824, 2).' GB';
+        } elseif ($bytes >= 1_048_576) {
+            $bytes = number_format($bytes / 1_048_576, 2).' MB';
         } elseif ($bytes >= 1024) {
             $bytes = number_format($bytes / 1024, 2).' KB';
         } elseif ($bytes > 1) {

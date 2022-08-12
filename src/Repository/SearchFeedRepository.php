@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\SearchFeed;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -24,7 +25,7 @@ class SearchFeedRepository extends ServiceEntityRepository
     /**
      * Truncate the database table used for this entity.
      *
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function truncateTable(): void
     {

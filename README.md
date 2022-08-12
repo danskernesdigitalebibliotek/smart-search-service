@@ -66,14 +66,14 @@ the coding standard for the project.
 * PHP files (PHP-CS-Fixer)
 
     ```shell
-    docker compose exec phpfpm composer check-coding-standards
+    docker compose exec phpfpm composer coding-standards-check
     ```
 
 * Markdown files (markdownlint standard rules)
 
     ```shell
-    docker run -v ${PWD}:/app itkdev/yarn:latest install
-    docker run -v ${PWD}:/app itkdev/yarn:latest check-coding-standards
+    docker run -it --rm -v "$PWD":/app -w /app node:16 yarn install
+    docker run -it --rm -v "$PWD":/app -w /app node:16 yarn check-coding-standards
     ```
 
 ### Apply Coding Standards
@@ -89,8 +89,8 @@ To attempt to automatically fix coding style
 * Markdown files (markdownlint standard rules)
 
     ```shell
-    docker run -v ${PWD}:/app itkdev/yarn:14 install
-    docker run -v ${PWD}:/app itkdev/yarn:14 apply-coding-standards
+    docker run -it --rm -v "$PWD":/app -w /app node:16 yarn install
+    docker run -it --rm -v "$PWD":/app -w /app node:16 yarn apply-coding-standards
     ```
 
 ## CI

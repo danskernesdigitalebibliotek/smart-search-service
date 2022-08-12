@@ -2,7 +2,7 @@
 # Files in the packages/ subdirectory configure your dependencies.
 
 # Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
 
 services:
@@ -10,14 +10,6 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-
-        bind:
-            $bindProjectDir: '%kernel.project_dir%'
-            $bindSourceBase: '%env(SOURCE_BASE)%'
-            $bindSourceSearchFeed: '%env(SOURCE_SEARCH_FEED)%'
-            $bindAutoDataSource: '%env(SOURCE_AUTO_DATA)%'
-            $bindDestinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
-            $bindTraceId: '%env(traceId:HTTP_X_REQUEST_ID)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -27,20 +19,40 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-            - '../src/Tests/'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    App\Command\ParseFeedCommand:
+        arguments:
+            $sourceSearchFeed: '%env(SOURCE_SEARCH_FEED)%'
+
+    App\Command\ParseUserClickedCommand:
+        arguments:
+            $autoDataSource: '%env(SOURCE_AUTO_DATA)%'
+
+    App\Controller\IndexController:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $destinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
+
+    App\Logger\TraceIdProcessor:
+        arguments:
+            $traceId: '%env(traceId:HTTP_X_REQUEST_ID)%'
+        tags:
+            - { name: monolog.processor }
 
     monolog.formatter.json:
         class: Monolog\Formatter\JsonFormatter
 
-    App\Logger\TraceIdProcessor:
-        tags:
-            - { name: monolog.processor }
+    App\Service\FileDownloaderService:
+        arguments:
+            $sourceBase: '%env(SOURCE_BASE)%'
 
-    # controllers are imported separately to make sure services can be injected
-    # as action arguments even if you don't extend any base controller class
-    App\Controller\:
-        resource: '../src/Controller/'
-        tags: ['controller.service_arguments']
+    App\Service\ParseSearchFeedService:
+        arguments:
+            $destinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Service\ParseUserClickedService:
+        arguments:
+            $destinationDirectory: '%kernel.project_dir%/%env(DESTINATION_DIRECTORY)%'

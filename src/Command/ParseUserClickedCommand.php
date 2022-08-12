@@ -4,42 +4,39 @@ namespace App\Command;
 
 use App\Service\FileDownloaderService;
 use App\Service\ParseUserClickedService;
-use Box\Spout\Common\Exception\SpoutException;
 use Doctrine\DBAL\Exception;
-use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-/**
- * Class ParseUserClickedCommand.
- */
+#[AsCommand(
+    name: 'app:parse:user',
+)]
 class ParseUserClickedCommand extends Command
 {
-    private string $source;
-    private FileDownloaderService $fileDownloader;
-    private ParseUserClickedService $parseUserClickedService;
-    private LoggerInterface $logger;
-
-    protected static $defaultName = 'app:parse:user';
+    private readonly Filesystem $filesystem;
 
     /**
      * ParseUserClickedCommand constructor.
      *
-     * @param string $bindAutoDataSource
+     * @param string $autoDataSource
      * @param FileDownloaderService $fileDownloader
      * @param ParseUserClickedService $parseUserClickedService
-     * @param LoggerInterface $informationLogger
+     * @param LoggerInterface $logger
      */
-    public function __construct(string $bindAutoDataSource, FileDownloaderService $fileDownloader, ParseUserClickedService $parseUserClickedService, LoggerInterface $informationLogger)
-    {
-        $this->source = $bindAutoDataSource;
-        $this->fileDownloader = $fileDownloader;
-        $this->parseUserClickedService = $parseUserClickedService;
-        $this->logger = $informationLogger;
+    public function __construct(
+        private readonly string $autoDataSource,
+        private readonly FileDownloaderService $fileDownloader,
+        private readonly ParseUserClickedService $parseUserClickedService,
+        private readonly LoggerInterface $logger
+    ) {
+        $this->filesystem = new Filesystem();
 
         parent::__construct();
     }
@@ -65,13 +62,15 @@ class ParseUserClickedCommand extends Command
 
         $filename = $input->getOption('filename');
         if (is_null($filename)) {
-            $this->logger->info('Starting download of file ('.$this->source.')');
+            $this->logger->info('Starting download of file ('.$this->autoDataSource.')');
             $progressBar->setMessage('Starting the download process (might take some time)...');
+            $progressBar->display();
 
             try {
-                $filename = $this->fileDownloader->download($this->source);
-            } catch (GuzzleException $e) {
-                $this->logger->info('Download failed of file ('.$this->source.') : '.$e->getMessage());
+                $filename = $this->filesystem->tempnam('/tmp', 'downloaded_');
+                $this->fileDownloader->download($this->autoDataSource, $filename);
+            } catch (TransportExceptionInterface $e) {
+                $this->logger->info('Download failed of file ('.$this->autoDataSource.') : '.$e->getMessage());
 
                 return Command::FAILURE;
             }
@@ -81,6 +80,7 @@ class ParseUserClickedCommand extends Command
         if ($reset) {
             $this->logger->info('Resetting database');
             $progressBar->setMessage('Resetting database...');
+            $progressBar->display();
             try {
                 $this->parseUserClickedService->reset();
             } catch (Exception $e) {
@@ -92,10 +92,10 @@ class ParseUserClickedCommand extends Command
 
         try {
             foreach ($this->parseUserClickedService->parse($filename) as $counts) {
-                $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted']);
+                $progressBar->setMessage('processed: '.$counts['processed'].' inserted: '.$counts['inserted'].' updated: '.$counts['updated']);
                 $progressBar->advance();
             }
-        } catch (SpoutException $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error reading CSV file : '.$e->getMessage());
 
             return Command::FAILURE;
@@ -103,6 +103,7 @@ class ParseUserClickedCommand extends Command
 
         $this->logger->info('Writing output file');
         $progressBar->setMessage('Writing output file...');
+        $progressBar->display();
         try {
             $this->parseUserClickedService->writeFile();
         } catch (\Exception $e) {
@@ -111,8 +112,9 @@ class ParseUserClickedCommand extends Command
             return Command::FAILURE;
         }
         $progressBar->finish();
+        $output->writeln('');
 
-        $this->fileDownloader->cleanUp($this->source);
+        $this->fileDownloader->cleanUp($this->autoDataSource);
 
         $this->logger->info('Completed');
 

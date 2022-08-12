@@ -1,7 +1,7 @@
 ARG VERSION="latest"
 FROM danskernesdigitalebibliotek/smart-search-service:${VERSION} as APPLICATION
 
-FROM nginx:1.20.1-alpine
+FROM nginx:1.23-alpine
 ARG APP_VERSION
 LABEL maintainer="ITK Dev <itkdev@mkb.aarhus.dk>"
 

@@ -24,6 +24,7 @@ spec:
               args:
                 - "bin/console"
                 - "app:parse:feed"
+                - "--reset"
                 - "--no-debug"
                 - "--quiet"
               env:
@@ -32,6 +33,16 @@ spec:
                     secretKeyRef:
                       name: {{ .Release.Name }}-secret
                       key: APP_SECRET
+                - name: APP_DB_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Release.Name }}-secret
+                      key: APP_DB_USERNAME
+                - name: APP_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Release.Name }}-secret
+                      key: APP_DB_PASSWORD
               envFrom:
                 - configMapRef:
                     name: {{ .Release.Name }}-configmap
@@ -69,6 +80,7 @@ spec:
               args:
                 - "bin/console"
                 - "app:parse:user"
+                - "--reset"
                 - "--no-debug"
                 - "--quiet"
               env:
@@ -77,6 +89,16 @@ spec:
                     secretKeyRef:
                       name: {{ .Release.Name }}-secret
                       key: APP_SECRET
+                - name: APP_DB_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Release.Name }}-secret
+                      key: APP_DB_USERNAME
+                - name: APP_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Release.Name }}-secret
+                      key: APP_DB_PASSWORD
               envFrom:
                 - configMapRef:
                     name: {{ .Release.Name }}-configmap
