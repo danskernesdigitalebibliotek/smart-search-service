@@ -1,8 +1,8 @@
 # @see https://symfony.com/doc/current/setup/web_server_configuration.html
 server {
-    listen 80;
+    listen 8080;
     server_name localhost;
-    root /var/www/html/public;
+    root {{ getenv "APP_PATH" "/var/www/html" }}/public;
 
     location / {
         add_header X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
@@ -35,13 +35,14 @@ server {
         return 404;
     }
 
-    error_log /dev/stdout;
+    error_log /dev/stderr;
+    access_log /dev/stdout main;
 }
 
 server {
-    listen 8080;
+    listen 8081;
     server_name localhost;
-    root /var/www/html/public;
+    root {{ getenv "APP_PATH" "/var/www/html" }}/public;
 
     error_log off;
     access_log off;
