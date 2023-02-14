@@ -172,7 +172,7 @@ class ParseUserClickedService
      */
     private function getPidFromPage(string $page): string
     {
-        if (!(str_contains($page, 'ereolen'))) {
+        if (!str_contains($page, 'ereolen')) {
             preg_match("%ting\.(collection|object)\.(.+)%", $page, $matches);
             if ($matches && isset($matches[2])) {
                 return $matches[2];
